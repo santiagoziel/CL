@@ -8,6 +8,6 @@ Repositorio para que pueda dejar de enviarle Zips a Lorenza y descanse mi alma
 
 - [x] saldos cash checar area de impresion
 
-- [ ] Pe-Retenciones
+- [x] Pe-Retenciones
 
 - [ ] checar que pedo con pivot tables
