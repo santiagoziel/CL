@@ -1,0 +1,502 @@
+Sub deal_Acc()
+'check how many accounts
+Dim AccountsQunty As Integer
+AccountsQunty = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+Dim num_sheets As Integer
+num_sheets = Sheets("backend").Cells(Sheets("backend").Rows.Count, 2).End(xlUp).Row - 2
+
+Dim sheets_info As Variant
+'mensajes individuales de cada sheet de act
+sheets_info = Sheets("backend").Range("b2:c" & CStr(num_sheets)).Value2
+Dim varKey As Integer
+Dim act_num As Integer
+For varKey = 1 To num_sheets - 1
+    act_num = get_number_activities(CStr(sheets_info(varKey, 1)))
+    Dim rgFound As Range
+    Dim rgTodelete As Range
+    Set rgFound = Range("E:E").Find(sheets_info(varKey, 2))
+    Set rgTodelete = rgFound
+    Set rgTodelete = rgTodelete.Resize(1, 8).Offset(0, -3)
+    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+    rgTodelete.Clear
+    'pon mensajes nuevos
+    rgFound.Resize(AccountsQunty, 1).Value = sheets_info(varKey, 2)
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(7 + act_num) & "]C[-4]"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 7) & "C2,RC[-1],R7C7:R" & CStr(act_num + 8) & "C7)"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 7) & "C2,RC[-3],R7C9:R" & CStr(act_num + 8) & "C9)"
+    
+    'Agregar nuevo gran total y notas con formato y todo
+    rgFound.Offset(AccountsQunty + 1, 1).Value = "Gran total"
+    rgFound.Offset(AccountsQunty + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C7:R" & CStr(rgFound.Row + AccountsQunty) & "C7)"
+    rgFound.Offset(AccountsQunty + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C9:R" & CStr(rgFound.Row + AccountsQunty) & "C9)"
+    rgFound.Offset(AccountsQunty + 4, -3).Value = "Notas:"
+    Columns("E:E").EntireColumn.AutoFit
+Next
+Call dealEdgeCase
+End Sub
+Sub dealEdgeCase()
+Dim AccountsQunty As Integer
+AccountsQunty = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+
+Dim num_sheets As Integer
+num_sheets = Sheets("backend").Cells(Sheets("backend").Rows.Count, 2).End(xlUp).Row
+
+Dim sheets_info As Variant
+'mensajes individuales de cada sheet de act
+sheets_info = Sheets("backend").Range("b" & CStr(num_sheets) & ":c" & CStr(num_sheets)).Value2
+Dim act_num As Integer
+act_num = get_number_activities(CStr(sheets_info(1, 1)))
+Dim rgFound As Range
+Dim rgTodelete As Range
+Set rgFound = Range("D:D").Find(sheets_info(1, 2))
+Set rgTodelete = rgFound
+Set rgTodelete = rgTodelete.Resize(1, 11).Offset(0, -2)
+Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+rgTodelete.Clear
+'pon mensajes nuevos
+rgFound.Resize(AccountsQunty, 1).Value = sheets_info(1, 2)
+rgFound.Resize(AccountsQunty, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(7 + act_num) & "]C2"
+rgFound.Resize(AccountsQunty, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 7) & "C2,RC[-1],R7C6:R" & CStr(act_num + 8) & "C6)"
+rgFound.Resize(AccountsQunty, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 7) & "C2,RC[-3],R7C8:R" & CStr(act_num + 8) & "C8)"
+rgFound.Resize(AccountsQunty, 1).Offset(0, 6).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 7) & "C2,RC[-5],R7C10:R" & CStr(act_num + 8) & "C10)"
+rgFound.Resize(AccountsQunty, 1).Offset(0, 8).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 7) & "C2,RC[-7],R7C12:R" & CStr(act_num + 8) & "C12)"
+'Agregar nuevo gran total y notas con formato y todo
+rgFound.Offset(AccountsQunty + 1, 1).Value = "Total de Dividendos percibidos de emisoras nacionales "
+rgFound.Offset(AccountsQunty + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C6:R" & CStr(rgFound.Row + AccountsQunty) & "C6)"
+rgFound.Offset(AccountsQunty + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C8:R" & CStr(rgFound.Row + AccountsQunty) & "C8)"
+rgFound.Offset(AccountsQunty + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C10:R" & CStr(rgFound.Row + AccountsQunty) & "C10)"
+rgFound.Offset(AccountsQunty + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C12:R" & CStr(rgFound.Row + AccountsQunty) & "C12)"
+rgFound.Offset(AccountsQunty + 4, -2).Value = "Notas:"
+Columns("E:E").EntireColumn.AutoFit
+
+Call dealEdgeCase2
+End Sub
+Sub dealEdgeCase2()
+Dim AccountsQunty As Integer
+AccountsQunty = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+
+Dim num_sheets As Integer
+num_sheets = Sheets("backend").Cells(Sheets("backend").Rows.Count, 2).End(xlUp).Row - 1
+
+Dim sheets_info As Variant
+'mensajes individuales de cada sheet de act
+sheets_info = Sheets("backend").Range("b" & CStr(num_sheets) & ":c" & CStr(num_sheets)).Value2
+Dim act_num As Integer
+act_num = get_number_activities(CStr(sheets_info(1, 1)))
+Dim rgFound As Range
+Dim rgTodelete As Range
+Set rgFound = Range("D:D").Find(sheets_info(1, 2))
+Set rgTodelete = rgFound
+Set rgTodelete = rgTodelete.Resize(1, 7).Offset(0, -2)
+Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+rgTodelete.Clear
+'pon mensajes nuevos
+rgFound.Resize(AccountsQunty, 1).Value = sheets_info(1, 2)
+rgFound.Resize(AccountsQunty, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(7 + act_num) & "]C2"
+rgFound.Resize(AccountsQunty, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 7) & "C2,RC[-1],R7C6:R" & CStr(act_num + 8) & "C6)"
+rgFound.Resize(AccountsQunty, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 7) & "C2,RC[-3],R7C8:R" & CStr(act_num + 8) & "C8)"
+'Agregar nuevo gran total y notas con formato y todo
+rgFound.Offset(AccountsQunty + 1, 1).Value = "Total de Dividendos percibidos de emisoras nacionales "
+rgFound.Offset(AccountsQunty + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C6:R" & CStr(rgFound.Row + AccountsQunty) & "C6)"
+rgFound.Offset(AccountsQunty + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C8:R" & CStr(rgFound.Row + AccountsQunty) & "C8)"
+
+rgFound.Offset(AccountsQunty + 4, -2).Value = "Notas:"
+Columns("E:E").EntireColumn.AutoFit
+End Sub
+Function get_number_activities(sheet_name As String) As Integer
+    Sheets(sheet_name).Activate
+    Dim rgFoundtop As Range
+    Set rgFoundtop = Range("B6")
+    
+    Dim rgFoundbot As Range
+    Set rgFoundbot = Range("B:B").Find("*total*")
+    
+    get_number_activities = rgFoundbot.Row - rgFoundtop.Row - 3
+End Function
+
+Sub go_through_accounts_sheets_list()
+Dim num_sheets As Integer
+num_sheets = Sheets("backend").Cells(Sheets("backend").Rows.Count, 2).End(xlUp).Row
+
+Dim sheets_info As Variant
+'mensajes individuales de cada sheet de act
+sheets_info = Sheets("backend").Range("a2:b" & CStr(num_sheets)).Value2
+Dim varKey As Integer
+For varKey = 1 To num_sheets - 1
+    'check if there are no entryees
+    With Sheets(sheets_info(varKey, 2))
+        If .Range("B6").End(xlDown).Text Like "Total*" Then
+            .Visible = False
+        Else
+            Dim starting_formatRow As Long
+            Dim endingFormatRow As Long
+            starting_formatRow = .Range("B:B").Find("Total*").Row + 5
+            endingFormatRow = .Range("b:b").Find("Notas:").Row - 3
+            .Visible = True
+            'set up print area
+            .PageSetup.printArea = .Range(.Cells(2, 2), .Cells(endingFormatRow, sheets_info(varKey, 1) + 1)).Address
+            'give format to the account sums
+            'dealing with annoying edge case
+            Dim starting_col As Integer
+            starting_col = IIf(sheets_info(varKey, 1) = 8, 5, 4)
+            .Range(.Cells(starting_formatRow, starting_col + 2), .Cells(endingFormatRow, sheets_info(varKey, 1) + 1)).NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
+            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, sheets_info(varKey, 1) + 1)).Font.Bold = True
+            .Columns(starting_col).EntireColumn.AutoFit
+            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).HorizontalAlignment = xlCenter
+            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).VerticalAlignment = xlCenter
+            Dim row_to_underline As Integer
+            For row_to_underline = starting_formatRow To endingFormatRow - 2
+                Call formatBlueLines(.Range(.Cells(row_to_underline, starting_col), .Cells(row_to_underline, sheets_info(varKey, 1) + 1)))
+            Next
+            Dim row_to_black As Range
+            Set row_to_black = .Range(.Cells(endingFormatRow, starting_col), .Cells(endingFormatRow, sheets_info(varKey, 1) + 1))
+            row_to_black.Font.ThemeColor = xlThemeColorDark1
+            row_to_black.Interior.ThemeColor = xlThemeColorLight1
+        End If
+    End With
+Next
+End Sub
+Sub formatBlueLines(rowToFormat As Range)
+    With rowToFormat.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ThemeColor = 5
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+End Sub
+Sub changetonumberFOrmat()
+Selection.NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
+Selection.Font.Bold = True
+End Sub
+
+Sub copy_values_from_sheet(origin As Workbook, copy As Workbook, sheetName As String)
+
+Dim copySheet As Worksheet
+Set copySheet = copy.Sheets.Add
+copySheet.Name = sheetName
+
+origin.Activate
+
+Dim currentSheet As Worksheet
+Set currentSheet = Sheets(sheetName)
+
+currentSheet.Activate
+Dim printArea As String
+printArea = currentSheet.PageSetup.printArea
+
+If InStr(ActiveSheet.PageSetup.printArea, ",") > 0 Then
+    Dim leftboundary As String
+    leftboundary = Left(ActiveSheet.PageSetup.printArea, InStr(ActiveSheet.PageSetup.printArea, ":") - 1)
+    
+    Dim rightBoundary As String
+    rightBoundary = Right(ActiveSheet.PageSetup.printArea, Len(ActiveSheet.PageSetup.printArea) - InStrRev(ActiveSheet.PageSetup.printArea, ":"))
+    printArea = leftboundary & ":" & rightBoundary
+End If
+
+currentSheet.Range(printArea).copy
+copy.Activate
+copySheet.Activate
+copySheet.Range(printArea).PasteSpecial Paste:=xlPasteValues
+copySheet.Range(printArea).PasteSpecial Paste:=xlPasteFormats
+copySheet.Range(printArea).PasteSpecial Paste:=xlPasteColumnWidths
+
+End Sub
+Sub set_Pe_print_area()
+Dim number_of_mising_tables
+With Sheets("PE")
+    number_of_mising_tables = Application.WorksheetFunction.RoundUp(((.Cells(.Rows.Count, 19).End(xlUp).Row - 9) / 26) / 3, 0) - 1
+    
+    Dim print_area_adress As String
+    print_area_adress = "b2:t83"
+    Dim current_page As Integer
+    For current_page = 1 To number_of_mising_tables - 1
+        print_area_adress = print_area_adress & ",b" & CStr(7 + (78 * current_page)) & ":t" & CStr(83 + (78 * current_page))
+    Next
+    print_area_adress = print_area_adress & ",b" & CStr(7 + (78 * number_of_mising_tables)) & ":t" & CStr(87 + (78 * number_of_mising_tables))
+    .PageSetup.printArea = print_area_adress
+End With
+End Sub
+
+Sub hide_perdidas()
+With Sheets("Act Pérdidas o Acreditamientos")
+    Dim topTable As Range
+    Set topTable = .Range("b:b").Find("20??")
+    Dim bottomTable As Range
+    Dim bottomArea As Range
+    Set bottomArea = .Range("o:o").Find("TOTAL")
+    Dim all_empty As Boolean
+    Dim area_empty As Boolean
+    Dim top_of_area As Integer
+    top_of_area = 3
+    area_empty = True
+    all_empty = True
+    Dim FirstAddressRow  As Integer
+    FirstAddressRow = topTable.Row
+    Do
+    Set bottomTable = .Range("b:b").Find("20??", after:=topTable)
+    If bottomTable.Row > bottomArea.Row Or bottomTable.Row = FirstAddressRow Then
+        If area_empty Then
+            .Rows(CStr(top_of_area) & ":" & CStr(bottomArea.Row)).EntireRow.Hidden = True
+        End If
+        area_empty = True
+        top_of_area = bottomArea.Row + 16
+         Set bottomTable = bottomArea.Offset(-1, -13)
+         Set bottomArea = .Range("o:o").Find("TOTAL", after:=bottomArea)
+    End If
+    'here we do the thing
+    If topTable.Offset(0, 9) = "" Then
+        .Rows(CStr(topTable.Row) & ":" & CStr(bottomTable.Row - 1)).EntireRow.Hidden = True
+    Else
+        all_empty = False
+        area_empty = False
+        'aqui iria si quiere que esconda mas hileras o algo
+    End If
+    '.Rows(CStr(topTable.Row) & ":" & CStr(bottomTable.Row - 1)).EntireRow.Select
+    Set topTable = .Range("b:b").Find("20??", after:=topTable)
+    Loop While Not topTable Is Nothing And topTable.Row <> FirstAddressRow
+    
+    If all_empty Then
+        .Rows("1:" & CStr(bottomTable.Row)).EntireRow.Hidden = False
+        .Visible = False
+    End If
+
+End With
+End Sub
+
+Sub go_through_pivot_list()
+        'si no esconder la hoja
+        'si si configurar printArea
+Dim pivotSheets As Variant
+pivotSheets = Array("Cap Gains Summary", _
+                    "Cap Gains Details", _
+                    "OFD - Summary options", _
+                    "OFD - Detail options")
+Dim i As Integer
+Dim check As Boolean
+'recorrer todas las pestañas con tablas de pivote
+For i = LBound(pivotSheets) To UBound(pivotSheets)
+    'checar si tiene algun dato
+    With Sheets(pivotSheets(i))
+        If pivot_list_is_empty(pivotSheets(i)) Then
+            .Visible = False
+        Else
+            .Visible = True
+            .PageSetup.printArea = Union(.Range(.Cells(2, 2), .Cells(4, .PivotTables(1).TableRange1.Columns.Count + 1)), .PivotTables(1).TableRange1).Address
+        End If
+    End With
+Next
+End Sub
+Function pivot_list_is_empty(sheetName As Variant) As Boolean
+pivot_list_is_empty = True
+Dim ws As Worksheet
+Set ws = Sheets(sheetName)
+Dim pt As PivotTable
+Set pt = ws.PivotTables(1)
+pt.NullString = "0"
+pt.PivotCache.Refresh
+If ws.Cells(ws.Rows.Count, 3).End(xlUp).Row < 6 Then
+    Exit Function
+End If
+Dim pf As PivotField
+Dim df As PivotField
+Dim check As Boolean
+pivot_list_is_empty = True
+  For Each pf In pt.PivotFields
+  check = False
+    If pf.Caption <> "Values" Then
+        Select Case pf.Orientation
+          Case xlHidden
+            For Each df In pt.DataFields
+                If df.SourceName _
+                    = pf.SourceName Then
+                  check = True
+                  Exit For
+                End If
+            Next df
+          Case xlDataField
+            check = True
+        End Select
+        If check Then
+            'MsgBox CStr(pf.SourceName) & " ---- " & CStr(pf.PivotItems.Count)
+            If pf.PivotItems.Count > 2 Then
+                pivot_list_is_empty = False
+                Exit For
+            End If
+        End If
+    End If
+    Next
+End Function
+Sub OrderList_PivotFields()
+'contextures.com
+'use the Notes column
+' for comments about fields
+Dim lRow As Long
+Dim wsList As Worksheet
+Dim pt As PivotTable
+Dim pf As PivotField
+Dim df As PivotField
+Dim pi As PivotItem
+Dim strList As String
+Dim strLoc As String
+strList = "Pivot_Fields_List"
+Application.DisplayAlerts = False
+
+On Error Resume Next
+Set pt = ActiveSheet.PivotTables(1)
+If pt Is Nothing Then
+  MsgBox "No pivot table on active sheet"
+  GoTo exitHandler
+End If
+Sheets(strList).Delete
+On Error GoTo errHandler
+
+Set wsList = Sheets.Add
+lRow = 2
+
+With wsList
+  .Name = strList
+  .Cells(1, 1).Value = "Caption"
+  .Cells(1, 2).Value = "Source Name"
+  .Cells(1, 3).Value = "Location"
+  .Cells(1, 4).Value = "Position"
+  .Cells(1, 5).Value = "Sample Item"
+  .Cells(1, 6).Value = "Formula"
+  .Cells(1, 7).Value = "Notes"
+  .Rows(1).Font.Bold = True
+  
+  For Each pf In pt.PivotFields
+    If pf.Caption <> "Values" Then
+        .Cells(lRow, 1).Value = pf.Caption
+        .Cells(lRow, 2).Value = pf.SourceName
+        Select Case pf.Orientation
+          Case xlHidden
+            strLoc = "Hidden"
+          Case xlRowField
+            strLoc = "Row"
+          Case xlColumnField
+            strLoc = "Column"
+          Case xlPageField
+            strLoc = "Page"
+          Case xlDataField
+            strLoc = "Data"
+        End Select
+        If strLoc = "Hidden" Then
+          For Each df In pt.DataFields
+            If df.SourceName _
+                = pf.SourceName Then
+              strLoc = "Data"
+              Exit For
+            End If
+          Next df
+        End If
+        .Cells(lRow, 3).Value = strLoc
+        .Cells(lRow, 4).Value = pf.Position
+        
+        On Error Resume Next
+        If pf.PivotItems.Count > 0 Then
+          .Cells(lRow, 5).Value _
+              = pf.PivotItems(1).Value
+        End If
+        On Error GoTo errHandler
+  
+        'print the formula for calculated fields
+        If pf.IsCalculated = True Then
+          .Cells(lRow, 6).Value = _
+              Right(pf.Formula, Len(pf.Formula) - 1)
+        End If
+  
+        lRow = lRow + 1
+      End If
+  Next pf
+  .Columns("A:G").EntireColumn.AutoFit
+End With
+
+exitHandler:
+  Application.DisplayAlerts = True
+  Exit Sub
+errHandler:
+  MsgBox "Could not create list"
+  Resume exitHandler
+
+End Sub
+
+Sub unprotect_All()
+Dim WS_Count As Integer
+WS_Count = ActiveWorkbook.Worksheets.Count
+Dim i As Integer
+For i = 1 To WS_Count
+If ActiveWorkbook.Worksheets(i).Name <> "Rev JR" And ActiveWorkbook.Worksheets(i).Name <> "1 Ingresos Acum & No Acum" Then
+If (ActiveWorkbook.Worksheets(i).Name = "1 Ingresos Acum & No Acum") Then
+    ActiveWorkbook.Worksheets(i).Unprotect "LP2022"
+ElseIf Not ActiveWorkbook.Worksheets(i).Name = "Rev" Then
+    Sheets(CStr(ActiveWorkbook.Worksheets(i).Name)).Unprotect "JUANG2022"
+End If
+End If
+Next i
+End Sub
+
+Sub protect_All()
+Dim WS_Count As Integer
+
+Dim protected_sheets As Variant
+protected_sheets = Sheets("SheetNames").Range("e2:e4").Value2
+
+WS_Count = ActiveWorkbook.Worksheets.Count
+Dim i As Integer
+Dim currentSheetName As String
+For i = 1 To WS_Count
+currentSheetName = ActiveWorkbook.Worksheets(i).Name
+If (currentSheetName = "1 Ingresos Acum & No Acum") Then
+    Sheets(currentSheetName).Protect Password:="LP2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
+ElseIf Not IsInArray(currentSheetName, protected_sheets) Then
+    Sheets(currentSheetName).Protect Password:="JUANG2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
+End If
+Next i
+End Sub
+
+
+Function WorksheetExists(shtName As String, Optional wb As Workbook) As Boolean
+    Dim sht As Worksheet
+
+    If wb Is Nothing Then Set wb = ThisWorkbook
+    On Error Resume Next
+    Set sht = wb.Sheets(shtName)
+    On Error GoTo 0
+    WorksheetExists = Not sht Is Nothing
+End Function
+
+Sub check_sheets_visibility()
+    Dim very_hidden_sheets As Variant
+    very_hidden_sheets = Sheets("SheetNames").Range("c2").Value2
+    
+    Dim lastVisibleSheet As Integer
+    lastVisibleSheet = Sheets("SheetNames").Cells(Rows.Count, 1).End(xlUp).Row
+    
+    Dim visible_sheets As Variant
+    visible_sheets = Sheets("SheetNames").Range("a2:a" & CStr(lastVisibleSheet)).Value2
+    
+    Dim WS_Count As Integer
+    WS_Count = ActiveWorkbook.Worksheets.Count
+    Dim i As Integer
+    Dim currentSheetName As String
+    'por cada hoja
+    For i = 1 To WS_Count
+        currentSheetName = ActiveWorkbook.Worksheets(i).Name
+        If IsInArray(currentSheetName, very_hidden_sheets) Then
+            Sheets(currentSheetName).Visible = xlSheetVeryHidden
+        ElseIf IsInArray(currentSheetName, visible_sheets) Then
+            Sheets(currentSheetName).Visible = True
+        Else
+            Sheets(currentSheetName).Visible = False
+        End If
+    Next i
+End Sub
+Function IsInArray(stringToBeFound As String, arr As Variant) As Boolean
+    IsInArray = Not IsError(Application.Match(stringToBeFound, arr, 0))
+End Function
+
+Sub format_cuentas_table()
+    Sheets("cuentas").PageSetup.printArea = "b1:d" & Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count + 4
+End Sub
+
+

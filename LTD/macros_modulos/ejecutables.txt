@@ -1,0 +1,103 @@
+Sub setup()
+If Not WorksheetExists("backend") Or Not WorksheetExists("SheetNames") Or Not WorksheetExists("Cuentas") Then
+    MsgBox "Please paste the needed sheets"
+    Exit Sub
+End If
+
+If Sheets("backend").Range("BS2").Value Then
+    MsgBox "Set up function already ran on this workBook"
+    Exit Sub
+End If
+
+'gen table
+With Sheets("Cuentas")
+    Dim lRow As Long
+    lRow = .Cells(Rows.Count, 4).End(xlUp).Row
+    lRow = IIf(lRow > 5, lRow, 6)
+    .ListObjects.Add(xlSrcRange, .Range("$B$4:$D$" & CStr(lRow)), , xlYes).Name = _
+        "TablaCuentas"
+    .ListObjects("TablaCuentas").TableStyle = ""
+    
+    With .Range("R5").Validation
+        .Delete
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+        xlBetween, Formula1:="TRUE, FALSE"
+        .IgnoreBlank = True
+        .InCellDropdown = True
+        .InputTitle = ""
+        .ErrorTitle = ""
+        .InputMessage = ""
+        .ErrorMessage = ""
+        .ShowInput = True
+        .ShowError = True
+    End With
+    .Range("r4").Value = "ARCHIVO VALORES"
+    .Range("r5").Value = True
+End With
+
+Sheets("backend").Unprotect "JUANG2022"
+Sheets("backend").Range("BS1").Value = "RAN SETUP"
+Sheets("backend").Range("BS2").Value = True
+Sheets("backend").Protect Password:="JUANG2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
+MsgBox "SET UP Done"
+End Sub
+Sub format_file()
+If Not WorksheetExists("backend") Or Not WorksheetExists("SheetNames") Or Not WorksheetExists("Cuentas") Then
+    MsgBox "Please paste the needed sheets"
+    Exit Sub
+End If
+If Not Sheets("backend").Range("BS2").Value Then
+    MsgBox "Please run the Setup first"
+    Exit Sub
+End If
+
+Application.ScreenUpdating = False
+Call unprotect_All
+Call check_sheets_visibility
+Call format_cuentas_table
+Call go_through_accounts_sheets_list
+Call set_Pe_print_area
+Call hide_perdidas
+Call go_through_pivot_list
+If Sheets("Cuentas").Cells(5, 18).Value = True Then Call gen_value_file
+Call protect_All
+Application.ScreenUpdating = True
+MsgBox "Done formating, please remember to save"
+End Sub
+Sub gen_value_file()
+Dim main_wb As Workbook
+Set main_wb = ActiveWorkbook
+
+Dim visible_sheets As Variant
+visible_sheets = Sheets("SheetNames").Range("a2:a29").Value2
+
+Dim WS_Count As Integer
+WS_Count = main_wb.Worksheets.Count
+
+Dim values_wb As Workbook
+Set values_wb = Workbooks.Add
+
+values_wb.Activate
+
+Dim i As Integer
+For i = 1 To WS_Count
+    Dim currentSheetName As String
+    currentSheetName = main_wb.Worksheets(i).Name
+    If main_wb.Worksheets(i).Visible Then
+        Call copy_values_from_sheet(main_wb, values_wb, currentSheetName)
+    End If
+Next i
+
+main_wb.Activate
+
+End Sub
+Sub PE_insertTable()
+Sheets("PE").Activate
+Dim pasteRow As Long
+pasteRow = Cells(Rows.Count, 7).End(xlUp).Row + 6
+Rows(CStr(pasteRow) & ":" & CStr(pasteRow + 25)).Insert
+Sheets("backend").Range(Sheets("backend").Cells(1, 7), Sheets("backend").Cells(25, 25)).copy
+Sheets("PE").Activate
+Cells(pasteRow, 2).PasteSpecial
+End Sub
+

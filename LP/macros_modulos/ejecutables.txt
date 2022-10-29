@@ -1,0 +1,120 @@
+'Primer macro a correr, solo se debe correr una vez por archivo
+'COnfigura Tablas y rangos
+Sub setup()
+If Not WorksheetExists("backend") Or Not WorksheetExists("SheetNames") Or Not WorksheetExists("Cuentas") Then
+    MsgBox "Please paste the needed sheets"
+    Exit Sub
+End If
+
+If Sheets("backend").Range("O2").Value Then
+    MsgBox "Set up function already ran on this workBook"
+    Exit Sub
+End If
+Sheets("Cuentas").Unprotect "JUANG2022"
+'gen table
+With Sheets("Cuentas")
+    Dim lRow As Long
+    lRow = .Cells(Rows.Count, 4).End(xlUp).Row
+    lRow = IIf(lRow > 5, lRow, 6)
+    .ListObjects.Add(xlSrcRange, .Range("$B$4:$D$" & CStr(lRow)), , xlYes).Name = _
+        "TablaCuentas"
+    .ListObjects("TablaCuentas").TableStyle = ""
+    
+    With .Range("R5:S5").Validation
+        .Delete
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+        xlBetween, Formula1:="TRUE, FALSE"
+        .IgnoreBlank = True
+        .InCellDropdown = True
+        .InputTitle = ""
+        .ErrorTitle = ""
+        .InputMessage = ""
+        .ErrorMessage = ""
+        .ShowInput = True
+        .ShowError = True
+    End With
+    .Range("r4").Value = "ARCHIVO VALORES"
+    .Range("s4").Value = "239"
+    
+    .Range("r5").Value = True
+    .Range("s5").Value = True
+End With
+
+Sheets("backend").Unprotect "JUANG2022"
+Sheets("backend").Range("O1").Value = "RAN SETUP"
+Sheets("backend").Range("O2").Value = True
+Sheets("backend").Protect Password:="JUANG2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
+MsgBox "SET UP Done"
+End Sub
+'Macro Principal, configura las areas de imprecion, esocnde filas y hojas no necesarias, pone formatos donde sea necesario
+Sub format_file()
+If Not WorksheetExists("backend") Or Not WorksheetExists("SheetNames") Or Not WorksheetExists("Cuentas") Then
+    MsgBox "Please paste the needed sheets"
+    Exit Sub
+End If
+If Not Sheets("backend").Range("O2").Value Then
+    MsgBox "Please run the Setup first"
+    Exit Sub
+End If
+
+Application.ScreenUpdating = False
+Call unprotect_All
+Call check_sheets_visibility
+
+If Sheets("Cuentas").Cells(5, 19).Value = "False" Then Sheets("239").Visible = False
+
+Call format_cuentas_table
+Call set_ingresos_PrintArea
+Call check_ingresos_BMV
+Call set_ad_dividendos_printArea
+Call go_through_pivot_list
+Call go_through_accounts_sheets_list
+Call set_inventario_bonos_printArea
+Call set_saldos_printArea
+Call set_Pe_print_area
+
+If Sheets("Cuentas").Cells(5, 18).Value = "True" Then Call gen_value_file
+Call protect_All
+Application.ScreenUpdating = True
+MsgBox "Done Fomating, please remeber to save"
+End Sub
+'Agrega una tabla generica en Saldos Cash
+Sub addCurrency_SaldosCash()
+
+Dim lRow As Integer
+lRow = Sheets("Saldos Cash").Cells(Rows.Count, 2).End(xlUp).Row
+Sheets("backend").Range("c2:m18").copy
+
+
+Sheets("Saldos Cash").Cells(lRow + 4, 2).PasteSpecial
+
+Sheets("Saldos Cash").Cells(lRow + 4, 3).Value = "AAI CCY Portfolio - Cifras en CCY"
+End Sub
+'Genera un aRcvhio copia con unicamente los valores en las areas de imprecion
+Sub gen_value_file()
+Dim main_wb As Workbook
+Set main_wb = ActiveWorkbook
+
+Dim visible_sheets As Variant
+visible_sheets = Sheets("SheetNames").Range("a2:a29").Value2
+
+Dim WS_Count As Integer
+WS_Count = main_wb.Worksheets.Count
+
+Dim values_wb As Workbook
+Set values_wb = Workbooks.Add
+
+values_wb.Activate
+
+Dim i As Integer
+For i = 1 To WS_Count
+    Dim currentSheetName As String
+    currentSheetName = main_wb.Worksheets(i).Name
+    If main_wb.Worksheets(i).Visible Then
+        Call copy_values_from_sheet(main_wb, values_wb, currentSheetName)
+    End If
+Next i
+
+main_wb.Activate
+
+End Sub

@@ -1,0 +1,614 @@
+Function WorksheetExists(shtName As String, Optional wb As Workbook) As Boolean
+    Dim sht As Worksheet
+
+    If wb Is Nothing Then Set wb = ThisWorkbook
+    On Error Resume Next
+    Set sht = wb.Sheets(shtName)
+    On Error GoTo 0
+    WorksheetExists = Not sht Is Nothing
+End Function
+Sub unprotect_All()
+Dim WS_Count As Integer
+WS_Count = ActiveWorkbook.Worksheets.Count
+Dim i As Integer
+For i = 1 To WS_Count
+If ActiveWorkbook.Worksheets(i).Name <> "Rev JR" Then
+If (ActiveWorkbook.Worksheets(i).Name = "1 Ingresos Acum & No Acum") Then
+    ActiveWorkbook.Worksheets(i).Unprotect "LP2022"
+Else
+    Sheets(CStr(ActiveWorkbook.Worksheets(i).Name)).Unprotect "JUANG2022"
+End If
+End If
+Next i
+End Sub
+
+Sub check_sheets_visibility()
+    Dim very_hidden_sheets As Variant
+    very_hidden_sheets = Sheets("SheetNames").Range("c2").Value2
+
+    Dim visible_sheets As Variant
+    visible_sheets = Sheets("SheetNames").Range("a2:a29").Value2
+    
+    Dim WS_Count As Integer
+    WS_Count = ActiveWorkbook.Worksheets.Count
+    Dim i As Integer
+    Dim currentSheetName As String
+    'por cada hoja
+    For i = 1 To WS_Count
+        currentSheetName = ActiveWorkbook.Worksheets(i).Name
+        If IsInArray(currentSheetName, very_hidden_sheets) Then
+            Sheets(currentSheetName).Visible = xlSheetVeryHidden
+        ElseIf IsInArray(currentSheetName, visible_sheets) Then
+            Sheets(currentSheetName).Visible = True
+        Else
+            Sheets(currentSheetName).Visible = False
+        End If
+    Next i
+End Sub
+Function IsInArray(stringToBeFound As String, arr As Variant) As Boolean
+    IsInArray = Not IsError(Application.Match(stringToBeFound, arr, 0))
+End Function
+
+Sub format_cuentas_table()
+    Sheets("cuentas").PageSetup.printArea = "b1:d" & Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count + 4
+End Sub
+
+Sub set_ingresos_PrintArea()
+    Dim firstSectionEmpty As Boolean
+    firstSectionEmpty = check_and_hide("$K$11:$K$48", "$B$2:$K$51")
+    
+    Dim secondSectionEmpty As Boolean
+    secondSectionEmpty = check_and_hide("$K$62:$K$79", "$B$52:$K$81")
+    
+    If firstSectionEmpty And secondSectionEmpty Then
+        Sheets("1 Ingresos Acum & No Acum").Visible = False
+        Exit Sub
+    End If
+    If Not firstSectionEmpty Then
+        Call check_and_hide("$K$11:$K$14", "$B$7:$K$15")
+        Call check_and_hide("$K$18:$K$27", "$B$16:$K$28")
+        Call check_and_hide("$K$31:$K$32", "$B$29:$K$33")
+        Call check_and_hide("$K$36:$K$43", "$B$34:$K$44")
+    End If
+    
+    If Not secondSectionEmpty Then
+        Call check_and_hide("$K$62:$K$66", "$C$60:$K$66")
+        Call check_and_hide("$K$70:$K$74", "$C$68:$K$74")
+    End If
+End Sub
+
+Function check_and_hide(checkArea As String, hideArea As String, Optional sheetName As Variant = "1 Ingresos Acum & No Acum") As Boolean
+    Dim checkRange As Range
+    Set checkRange = Sheets(sheetName).Range(checkArea)
+    
+    Dim hide As Boolean
+    hide = True
+    
+    Dim cell As Range
+    For Each cell In checkRange
+        If Abs(cell.Value) > 0.0001 Then
+            hide = False
+            Exit For
+        End If
+    Next
+    
+    If hide Then
+        Dim hideRange As Range
+        Set hideRange = Sheets(sheetName).Range(hideArea)
+        hideRange.EntireRow.Hidden = True
+    End If
+    check_and_hide = hide
+End Function
+
+Sub check_ingresos_BMV()
+Sheets("2 Ingresos BMV & SIC").Visible = hasvalues("f10:j10")
+End Sub
+
+Function hasvalues(area As String) As Boolean
+    Dim checkRange As Range
+    Set checkRange = Sheets("2 Ingresos BMV & SIC").Range(area)
+    
+    hasvalues = False
+    Dim cell As Range
+    For Each cell In checkRange
+        If Abs(cell.Value) > 0.0001 Then
+            hasvalues = True
+            Exit For
+        End If
+    Next
+End Function
+
+Sub set_ad_dividendos_printArea()
+Dim firstSectionEmpty As Boolean
+firstSectionEmpty = isEmpty("$H$11:$J$15")
+
+Dim secondSectionEmpty As Boolean
+secondSectionEmpty = isEmpty("h21:j21")
+With Sheets("3 Ingresos 10% Ad - Dividendos")
+    If firstSectionEmpty And secondSectionEmpty Then
+            .Visible = False
+            Exit Sub
+    End If
+    
+    .PageSetup.printArea = IIf(secondSectionEmpty, "$B$3:$J$17", "$B$3:$J$22")
+    
+End With
+End Sub
+
+Function isEmpty(area As String) As Boolean
+    Dim checkRange As Range
+    Set checkRange = Sheets("3 Ingresos 10% Ad - Dividendos").Range(area)
+    
+    isEmpty = True
+    Dim cell As Range
+    For Each cell In checkRange
+        If Abs(cell.Value) > 0.0001 Then
+            isEmpty = False
+            Exit For
+        End If
+    Next
+End Function
+
+Sub go_through_pivot_list()
+        'si no esconder la hoja
+        'si si configurar printArea
+        
+ThisWorkbook.RefreshAll
+Dim pivotSheets As Variant
+pivotSheets = Array("Cap Gain Summary S-I", _
+                    "Cap Gain Summary S-II", _
+                    "OFD Summary", _
+                    "CGDet Cap IV SI & SII - NO OFD ", _
+                    "CG OFD Cap IV SII & Cap IX")
+Dim i As Integer
+Dim check As Boolean
+'recorrer todas las pestañas con tablas de pivote
+For i = LBound(pivotSheets) To UBound(pivotSheets)
+    'checar si tiene algun dato
+    With Sheets(pivotSheets(i))
+        If pivot_list_is_empty(pivotSheets(i)) Then
+            .Visible = False
+        Else
+            .Visible = True
+            .PageSetup.printArea = Union(.Range(.Cells(2, 2), .Cells(4, .PivotTables(1).TableRange1.Columns.Count + 1)), .PivotTables(1).TableRange1).Address
+        End If
+    End With
+Next
+End Sub
+Function pivot_list_is_empty(sheetName As Variant) As Boolean
+Dim ws As Worksheet
+Set ws = Sheets(sheetName)
+ws.Activate
+Dim pt As PivotTable
+Set pt = ws.PivotTables(1)
+pt.DisplayFieldCaptions = False
+Dim start_col As Integer
+start_col = Cells(5, 1).End(xlToRight).Column
+
+Dim lCol As Integer
+'Find the last non-blank cell in row 1
+lCol = Cells(5, Columns.Count).End(xlToLeft).Column
+pivot_list_is_empty = True
+Dim i As Integer
+For i = start_col To lCol
+    If pt.PivotFields(ws.Cells(5, i).Text).PivotItems.Count > 0 Then
+        pivot_list_is_empty = False
+        Exit For
+    End If
+Next
+pt.DisplayFieldCaptions = True
+Rows("5:5").EntireRow.AutoFit
+End Function
+
+Sub go_through_accounts_sheets_list()
+Dim act_num As Variant
+act_num = Sheets("backend").Range("p2:q13").Value2
+Dim i As Integer
+For i = LBound(act_num) To UBound(act_num)
+        With Sheets(act_num(i, 1))
+        If .Range("B6").End(xlDown).Text Like "Total*" Then
+            .Visible = False
+        Else
+            Dim starting_formatRow As Long
+            Dim endingFormatRow As Long
+            starting_formatRow = .Range("B:B").Find("Total*").Row + 5
+            endingFormatRow = .Range("b:b").Find("Notas").Row - 3
+            .Visible = True
+            'set up print area
+            .PageSetup.printArea = .Range(.Cells(2, 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).Address
+            'give format to the account sums
+            'dealing with annoying edge case
+            Dim starting_col As Integer
+            starting_col = IIf(act_num(i, 2) < 11, 5, 4)
+            .Range(.Cells(starting_formatRow, starting_col + 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
+            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1)).Font.Bold = True
+            .Columns(starting_col).EntireColumn.AutoFit
+            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).HorizontalAlignment = xlCenter
+            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).VerticalAlignment = xlCenter
+            Dim row_to_underline As Integer
+            For row_to_underline = starting_formatRow To endingFormatRow - 2
+                Call formatBlueLines(.Range(.Cells(row_to_underline, starting_col), .Cells(row_to_underline, act_num(i, 2) + 1)))
+            Next
+            Dim row_to_black As Range
+            Set row_to_black = .Range(.Cells(endingFormatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1))
+            row_to_black.Font.ThemeColor = xlThemeColorDark1
+            row_to_black.Interior.ThemeColor = xlThemeColorLight1
+        End If
+    End With
+Next
+End Sub
+
+Sub formatBlueLines(rowToFormat As Range)
+    With rowToFormat.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ThemeColor = 5
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+End Sub
+Sub changetonumberFOrmat()
+Selection.NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
+Selection.Font.Bold = True
+End Sub
+
+Sub set_inventario_bonos_printArea()
+Sheets("Inventario de bonos").Cells.EntireRow.Hidden = False
+Dim print_area_adress As String
+print_area_adress = "b2:n4"
+
+Dim chekingRange As Range
+Set chekingRange = Sheets("Inventario de bonos").Range("B:B")
+
+Dim TableStart As Range
+Set TableStart = Sheets("Inventario de bonos").Cells.Find(what:="Número de cuenta:")
+
+Dim tableEnd As Range
+Set tableEnd = chekingRange.Find(what:="de costos de adquisición Bonos: ")
+
+Dim previusTableEnd As Range
+
+Dim FirstCell As String
+FirstCell = tableEnd.Address
+
+Dim pageRange As Range
+Dim x As Boolean
+Dim xr As Boolean
+Do
+    Set pageRange = Sheets("Inventario de bonos").Range("b" & CStr(TableStart.Row) & ":b" & CStr(tableEnd.Row))
+    If (pageRange.SpecialCells(xlCellTypeVisible).Cells.Count > 81) Then
+        'si supera, genera nueva print area con valor incial y anteiror
+        print_area_adress = print_area_adress & ",b" & TableStart.Row & ":n" & CStr(previusTableEnd.Row)
+        Set TableStart = Sheets("Inventario de bonos").Cells.Find(what:="Número de cuenta:", after:=previusTableEnd)
+    End If
+    x = checkTable(tableEnd, previusTableEnd)
+    xr = IIf(xr, xr, x)
+    Set previusTableEnd = tableEnd
+    Set tableEnd = chekingRange.Find(what:="de costos de adquisición Bonos: ", after:=tableEnd)
+Loop While FirstCell <> tableEnd.Address
+If xr Then
+    print_area_adress = print_area_adress & ",b" & TableStart.Row & ":n" & CStr(previusTableEnd.Row)
+    Sheets("Inventario de bonos").PageSetup.printArea = print_area_adress
+Else
+    Sheets("Inventario de bonos").Visible = False
+End If
+End Sub
+
+Function checkTable(tableEnd As Range, previus As Range) As Boolean
+    Dim TableStart As Range
+    If previus Is Nothing Then
+        Set TableStart = Sheets("Inventario de bonos").Cells.Find(what:="Número de cuenta:")
+    Else
+        Set TableStart = Sheets("Inventario de bonos").Cells.Find(what:="Número de cuenta:", after:=previus)
+    End If
+        
+    Dim table As Range
+    Set table = Sheets("Inventario de bonos").Range(TableStart, tableEnd.Offset(1, 0))
+    checkTable = Sheets("Inventario de bonos").Range("b" & CStr(table.Row + 1)).End(xlDown).Row <> table.Row + table.Rows.Count - 2
+    table.EntireRow.Hidden = Not checkTable
+End Function
+
+Sub set_saldos_printArea()
+If Not check_SC_visibility Then
+   Sheets("Saldos Cash").Visible = False
+   Sheets("AAI").Visible = False
+   Exit Sub
+End If
+
+Dim print_area_adress As String
+print_area_adress = "b2:k12"
+
+Dim chekingRange As Range
+Set chekingRange = Sheets("Saldos Cash").Range("B:B")
+
+Dim TableStart As Range
+Set TableStart = find_non_hidden("Saldo al inicio", chekingRange)
+
+Dim tableEnd As Range
+Set tableEnd = find_non_hidden("Diciembre", chekingRange, TableStart)
+
+Dim previusTableEnd As Range
+Set previusTableEnd = tableEnd
+
+Dim FirstCell As String
+FirstCell = tableEnd.Address
+
+Do
+'this asums a single table will never be larger than 81 rows
+    Dim pageRange As Range
+    Set pageRange = Sheets("Saldos Cash").Range("b" & CStr(TableStart.Row - 3) & ":b" & CStr(tableEnd.Row))
+    If (pageRange.SpecialCells(xlCellTypeVisible).Cells.Count > 81) Then
+        print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 3) & ":k" & CStr(previusTableEnd.Row)
+        Set TableStart = find_non_hidden("Saldo al inicio", chekingRange, previusTableEnd)
+     End If
+    Set previusTableEnd = tableEnd
+    Set tableEnd = find_non_hidden("Diciembre", chekingRange, previusTableEnd)
+Loop While FirstCell <> tableEnd.Address
+
+
+print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 3) & ":k" & CStr(previusTableEnd.Row)
+
+Sheets("Saldos Cash").PageSetup.printArea = print_area_adress
+
+End Sub
+Function find_non_hidden(what As String, Optional lookRange As Range = Nothing, Optional ByVal after As Range = Nothing) As Range
+    If lookRange Is Nothing Then Set lookRange = ActiveSheet.Cells
+    Do
+        Dim found As Range
+        If after Is Nothing Then
+            Set found = lookRange.Find(what)
+        Else
+            Set found = lookRange.Find(what, after)
+        End If
+        
+        Set after = found
+    Loop While found.Cells.EntireRow.Hidden
+    Set find_non_hidden = found
+    
+End Function
+Function check_SC_visibility() As Boolean
+Sheets("Saldos Cash").Cells.EntireRow.Hidden = False
+Dim lRow As Integer
+lRow = Sheets("Saldos Cash").Cells(Rows.Count, 2).End(xlUp).Row
+Debug.Print lRow
+Dim number_of_tables As Integer
+number_of_tables = (lRow - 9) / 19
+
+Dim i As Integer
+For i = 0 To number_of_tables - 1
+    Dim checkArea As String
+    checkArea = "c" & CStr(16 + (i * 19)) & ":k" & CStr(28 + (i * 19))
+    Dim hideArea As String
+    hideArea = "b" & CStr(13 + (i * 19)) & ":k" & CStr(31 + (i * 19))
+    Dim needToHide As Boolean
+    needToHide = check_and_hide(checkArea, hideArea, "Saldos Cash")
+    check_SC_visibility = IIf(check_SC_visibility, check_SC_visibility, Not needToHide)
+Next
+
+End Function
+Sub set_Pe_print_area()
+If Not check_PEI_visibility Then
+   Sheets("PE - Inventario").Visible = False
+   Exit Sub
+End If
+
+Dim print_area_adress As String
+print_area_adress = "b2:t6"
+
+Dim TableStart As Range
+Set TableStart = Sheets("PE - Inventario").Cells.Find(what:="Capital Comprometido - Commitment")
+
+Dim tableEnd As Range
+Set tableEnd = Sheets("PE - Inventario").Cells.Find(what:="Total Ingresos Commitment")
+
+Dim previusTableEnd As Range
+
+Dim FirstCell As String
+FirstCell = tableEnd.Address
+
+Dim pageRange As Range
+Do
+    Set pageRange = Sheets("PE - Inventario").Range("b" & CStr(TableStart.Row - 2) & ":b" & CStr(tableEnd.Row))
+    On Error GoTo errHandler
+        pageRange.SpecialCells(xlCellTypeVisible).Select
+    On Error GoTo 0
+pageSetter:
+    If (Not pageRange Is Nothing) Then
+    If (pageRange.SpecialCells(xlCellTypeVisible).Cells.Count > 81) Then
+        'si supera, genera nueva print area con valor incial y anteiror
+        print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 2) & ":t" & CStr(previusTableEnd.Row)
+        Set TableStart = Sheets("PE - Inventario").Cells.Find(what:="Capital Comprometido - Commitment", after:=previusTableEnd)
+    End If
+    End If
+    Set previusTableEnd = tableEnd
+    Set tableEnd = Sheets("PE - Inventario").Cells.Find(what:="Total Ingresos Commitment", after:=tableEnd)
+Loop While FirstCell <> tableEnd.Address
+
+print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 3) & ":k" & CStr(previusTableEnd.Row)
+Sheets("Saldos Cash").PageSetup.printArea = print_area_adress
+Exit Sub
+errHandler:
+Set pageRange = Nothing
+GoTo pageSetter
+End Sub
+
+Function check_PEI_visibility() As Boolean
+Sheets("PE - Inventario").Cells.EntireRow.Hidden = False
+Dim lRow As Integer
+lRow = Sheets("PE - Inventario").Cells(Rows.Count, 19).End(xlUp).Row
+Dim number_of_tables As Integer
+number_of_tables = (lRow - 10) / 24
+
+Dim i As Integer
+For i = 0 To number_of_tables - 1
+    Dim checkArea As String
+    checkArea = "h" & CStr(9 + (i * 26)) & ":p" & CStr(27 + (i * 26))
+    Dim hideArea As String
+    hideArea = "b" & CStr(7 + (i * 26)) & ":t" & CStr(32 + (i * 26))
+    Dim needToHide As Boolean
+    needToHide = check_and_hide(checkArea, hideArea, "PE - Inventario")
+    check_PEI_visibility = IIf(check_PEI_visibility, check_PEI_visibility, Not needToHide)
+Next
+
+End Function
+Sub copy_values_from_sheet(origin As Workbook, copy As Workbook, sheetName As String)
+
+Dim copySheet As Worksheet
+Set copySheet = copy.Sheets.Add
+copySheet.Name = sheetName
+
+origin.Activate
+
+Dim currentSheet As Worksheet
+Set currentSheet = Sheets(sheetName)
+
+currentSheet.Activate
+Dim printArea As String
+printArea = currentSheet.PageSetup.printArea
+
+If InStr(ActiveSheet.PageSetup.printArea, ",") > 0 Then
+    Dim leftboundary As String
+    leftboundary = Left(ActiveSheet.PageSetup.printArea, InStr(ActiveSheet.PageSetup.printArea, ":") - 1)
+    
+    Dim rightBoundary As String
+    rightBoundary = Right(ActiveSheet.PageSetup.printArea, Len(ActiveSheet.PageSetup.printArea) - InStrRev(ActiveSheet.PageSetup.printArea, ":"))
+    printArea = leftboundary & ":" & rightBoundary
+End If
+
+currentSheet.Range(printArea).copy
+copy.Activate
+copySheet.Activate
+copySheet.Range(printArea).PasteSpecial Paste:=xlPasteValues
+copySheet.Range(printArea).PasteSpecial Paste:=xlPasteFormats
+copySheet.Range(printArea).PasteSpecial Paste:=xlPasteColumnWidths
+
+End Sub
+Sub protect_All()
+Dim WS_Count As Integer
+
+Dim protected_sheets As Variant
+protected_sheets = Sheets("SheetNames").Range("e2:e4").Value2
+
+WS_Count = ActiveWorkbook.Worksheets.Count
+Dim i As Integer
+Dim currentSheetName As String
+For i = 1 To WS_Count
+currentSheetName = ActiveWorkbook.Worksheets(i).Name
+If (currentSheetName = "1 Ingresos Acum & No Acum") Then
+    Sheets(currentSheetName).Protect Password:="LP2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
+ElseIf Not IsInArray(currentSheetName, protected_sheets) Then
+    Sheets(currentSheetName).Protect Password:="JUANG2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
+End If
+Next i
+End Sub
+Sub dealWithMostAcc()
+Dim AccountsQuantity As Integer
+AccountsQuantity = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+
+Dim actvty_message As Variant
+actvty_message = Sheets("backend").Range("R2:S10").Value2
+Dim i As Integer
+Dim act_num As Integer
+For i = LBound(actvty_message) To UBound(actvty_message)
+    act_num = get_number_activities(CStr(actvty_message(i, 1)))
+    Dim rgFound As Range
+    Dim rgTodelete As Range
+    Set rgFound = Range("E:E").Find(actvty_message(i, 2))
+    Set rgTodelete = rgFound
+    Set rgTodelete = rgTodelete.Resize(1, 10).Offset(0, -3)
+    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+    rgTodelete.Clear
+    'pon mensajes nuevos
+    'por cada cuenta
+    rgFound.Resize(AccountsQuantity, 1).Value = actvty_message(i, 2)
+    rgFound.Resize(AccountsQuantity, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-4]"
+    rgFound.Resize(AccountsQuantity, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C7:R" & CStr(act_num + 8) & "C7)"
+    rgFound.Resize(AccountsQuantity, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-3],R7C9:R" & CStr(act_num + 8) & "C9)"
+    rgFound.Resize(AccountsQuantity, 1).Offset(0, 6).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-5],R7C11:R" & CStr(act_num + 8) & "C11)"
+    
+    'agregar nuevo gran total y notas con formato y todo
+    rgFound.Offset(AccountsQuantity + 1, 0).Value = "Gran total de intereses percibidos en el ejercicio en la Cta. "
+    rgFound.Offset(AccountsQuantity + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C7:R" & CStr(rgFound.Row + AccountsQuantity) & "C7)"
+    rgFound.Offset(AccountsQuantity + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C9:R" & CStr(rgFound.Row + AccountsQuantity) & "C9)"
+    rgFound.Offset(AccountsQuantity + 1, 6).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C11:R" & CStr(rgFound.Row + AccountsQuantity) & "C11)"
+    rgFound.Offset(AccountsQuantity + 4, -3).Value = "Notas:"
+    Columns("E:E").EntireColumn.AutoFit
+Next
+End Sub
+Sub deal_edgeCases_Acc()
+Dim AccountsQuantity As Integer
+AccountsQuantity = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+
+Dim actvty_message As Variant
+actvty_message = Sheets("backend").Range("R11:S13").Value2
+Dim i As Integer
+Dim act_num As Integer
+For i = LBound(actvty_message) To UBound(actvty_message)
+    act_num = get_number_activities(CStr(actvty_message(i, 1)))
+    Dim rgFound As Range
+    Dim rgTodelete As Range
+    Set rgFound = Range("E:E").Find(actvty_message(i, 2))
+    Set rgTodelete = rgFound
+    Set rgTodelete = rgTodelete.Resize(1, 9).Offset(0, -3)
+    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+    rgTodelete.Clear
+    'pon mensajes nuevos
+    'por cada cuenta
+    
+    rgFound.Resize(AccountsQuantity, 1).Value = actvty_message(i, 2)
+    rgFound.Resize(AccountsQuantity, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-4]"
+    rgFound.Resize(AccountsQuantity, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C7:R" & CStr(act_num + 8) & "C7)"
+    rgFound.Resize(AccountsQuantity, 1).Offset(0, 5).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-4],R7C10:R" & CStr(act_num + 8) & "C10)"
+    
+    'Agregar nuevo gran total y notas con formato y todo
+    rgFound.Offset(AccountsQuantity + 1, 1).Value = "Gran total"
+    rgFound.Offset(AccountsQuantity + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C7:R" & CStr(rgFound.Row + AccountsQuantity) & "C7)"
+    rgFound.Offset(AccountsQuantity + 1, 5).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C10:R" & CStr(rgFound.Row + AccountsQuantity) & "C10)"
+    rgFound.Offset(AccountsQuantity + 4, -3).Value = "Notas:"
+    Columns("E:E").EntireColumn.AutoFit
+Next
+
+Call dealwithsuperrareact(act_num, AccountsQuantity)
+End Sub
+Sub dealwithsuperrareact(act_num As Integer, AccountsQunty As Integer)
+    act_num = get_number_activities("Dividendos Nacionales")
+    Dim rgFound As Range
+    Dim rgTodelete As Range
+    Set rgFound = Range("D:D").Find("Total de dividendos de emisoras nacionales percibidos en la Cta.")
+    Set rgTodelete = rgFound
+    Set rgTodelete = rgTodelete.Resize(1, 16).Offset(0, -2)
+    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+    rgTodelete.Clear
+    'pon mensajes nuevos
+    'por cada cuenta
+    rgFound.Resize(AccountsQunty, 1).Value = "Total de dividendos de emisoras nacionales percibidos en la Cta."
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-3]"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C6:R" & CStr(act_num + 8) & "C6)"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-3],R7C8:R" & CStr(act_num + 8) & "C8)"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 5).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-4],R7C9:R" & CStr(act_num + 8) & "C9)"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 9).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-8],R7C13:R" & CStr(act_num + 8) & "C13)"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 11).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-9],R7C14:R" & CStr(act_num + 8) & "C14)"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 13).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-11],R7C16:R" & CStr(act_num + 8) & "C16)"
+    rgFound.Resize(AccountsQunty, 1).Offset(0, 14).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-12],R7C17:R" & CStr(act_num + 8) & "C17)"
+
+    'Agregar nuevo gran total y notas con formato y todo
+    rgFound.Offset(AccountsQunty + 1, 0).Value = "Gran total de dividendos percibidos de emisoras nacionales "
+    rgFound.Offset(AccountsQunty + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C6:R" & CStr(rgFound.Row + AccountsQunty) & "C6)"
+    rgFound.Offset(AccountsQunty + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C8:R" & CStr(rgFound.Row + AccountsQunty) & "C8)"
+    rgFound.Offset(AccountsQunty + 1, 5).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C9:R" & CStr(rgFound.Row + AccountsQunty) & "C9)"
+    rgFound.Offset(AccountsQunty + 1, 9).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C13:R" & CStr(rgFound.Row + AccountsQunty) & "C13)"
+    rgFound.Offset(AccountsQunty + 1, 11).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C14:R" & CStr(rgFound.Row + AccountsQunty) & "C14)"
+    rgFound.Offset(AccountsQunty + 1, 13).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C16:R" & CStr(rgFound.Row + AccountsQunty) & "C16)"
+    rgFound.Offset(AccountsQunty + 1, 14).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C17:R" & CStr(rgFound.Row + AccountsQunty) & "C17)"
+    rgFound.Offset(AccountsQunty + 4, -2).Value = "Notas:"
+    Columns("D:D").EntireColumn.AutoFit
+End Sub
+Function get_number_activities(sheet_name As String) As Integer
+    Sheets(sheet_name).Activate
+    Dim rgFoundtop As Range
+    Set rgFoundtop = Range("B6")
+    
+    Dim rgFoundbot As Range
+    Set rgFoundbot = Range("B:B").Find("Total*")
+    
+    get_number_activities = rgFoundbot.Row - rgFoundtop.Row - 3
+End Function
