@@ -6,7 +6,7 @@ Repositorio para que pueda dejar de enviarle Zips a Lorenza y descanse mi alma
 
 - [x] checar filas ocultas despues de agregar cuenta
 
-- [ ] saldos cash checar area de impresion
+- [x] saldos cash checar area de impresion
 
 - [ ] Pe-Retenciones
 

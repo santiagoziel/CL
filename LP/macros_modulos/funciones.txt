@@ -207,7 +207,6 @@ acts.EntireRow.Hidden = False
 
 Dim cell As Range
 For Each cell In acts
-    Debug.Print cell.Text
     If Len(cell.Text) > 1 Then
         visible_activityes = True
     Else
@@ -334,7 +333,7 @@ If Not check_SC_visibility Then
 End If
 
 Dim print_area_adress As String
-print_area_adress = "b2:k12"
+print_area_adress = "b10:L12"
 
 Dim chekingRange As Range
 Set chekingRange = Sheets("Saldos Cash").Range("B:B")
@@ -356,7 +355,7 @@ Do
     Dim pageRange As Range
     Set pageRange = Sheets("Saldos Cash").Range("b" & CStr(TableStart.Row - 3) & ":b" & CStr(tableEnd.Row))
     If (pageRange.SpecialCells(xlCellTypeVisible).Cells.Count > 81) Then
-        print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 3) & ":k" & CStr(previusTableEnd.Row)
+        print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 3) & ":L" & CStr(previusTableEnd.Row + 1)
         Set TableStart = find_non_hidden("Saldo al inicio", chekingRange, previusTableEnd)
      End If
     Set previusTableEnd = tableEnd
@@ -364,7 +363,7 @@ Do
 Loop While FirstCell <> tableEnd.Address
 
 
-print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 3) & ":k" & CStr(previusTableEnd.Row)
+print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 3) & ":L" & CStr(previusTableEnd.Row + 1)
 
 Sheets("Saldos Cash").PageSetup.printArea = print_area_adress
 
@@ -388,7 +387,7 @@ Function check_SC_visibility() As Boolean
 Sheets("Saldos Cash").Cells.EntireRow.Hidden = False
 Dim lRow As Integer
 lRow = Sheets("Saldos Cash").Cells(Rows.Count, 2).End(xlUp).Row
-Debug.Print lRow
+'Debug.Print lRow
 Dim number_of_tables As Integer
 number_of_tables = (lRow - 9) / 19
 
