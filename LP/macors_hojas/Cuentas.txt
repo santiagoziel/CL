@@ -7,7 +7,7 @@ cantidad_cuentas_pasada = Sheets("backend").Cells(2, 1).Value
 If cantidad_cuentas_actual <> cantidad_cuentas_pasada Then
     Call unprotect_All
     Call dealWithMostAcc
-    Call test
+    Call deal_edgeCases_Acc
     Sheets("backend").Cells(2, 1).Value = cantidad_cuentas_actual
     Sheets("cuentas").Activate
     Call protect_All

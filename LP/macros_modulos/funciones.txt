@@ -199,6 +199,20 @@ Next
 pt.DisplayFieldCaptions = True
 Rows("5:5").EntireRow.AutoFit
 End Function
+Function visible_activityes(act_start As Range, act_end As Range) As Boolean
+Dim acts As Range
+Set acts = Range(act_start, act_end)
+
+Dim cell As Range
+For Each cell In acts
+    Debug.Print cell.Text
+    If Len(cell.Text) > 1 Then
+        visible_activityes = True
+        Exit Function
+    End If
+Next
+visible_activityes = False
+End Function
 
 Sub go_through_accounts_sheets_list()
 Dim act_num As Variant
@@ -206,7 +220,9 @@ act_num = Sheets("backend").Range("p2:q13").Value2
 Dim i As Integer
 For i = LBound(act_num) To UBound(act_num)
         With Sheets(act_num(i, 1))
-        If .Range("B6").End(xlDown).Text Like "Total*" Then
+        Dim activityEnd As Range
+        Set activityEnd = .Range("B:B").Find("Total*").Offset(-2, 0)
+        If Not visible_activityes(.Range("B8"), activityEnd) Then
             .Visible = False
         Else
             Dim starting_formatRow As Long
