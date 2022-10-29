@@ -203,15 +203,18 @@ Function visible_activityes(act_start As Range, act_end As Range) As Boolean
 Dim acts As Range
 Set acts = Range(act_start, act_end)
 
+acts.EntireRow.Hidden = False
+
 Dim cell As Range
 For Each cell In acts
     Debug.Print cell.Text
     If Len(cell.Text) > 1 Then
         visible_activityes = True
-        Exit Function
+    Else
+        cell.EntireRow.Hidden = True
     End If
 Next
-visible_activityes = False
+visible_activityes = IIf(visible_activityes, visible_activityes, False)
 End Function
 
 Sub go_through_accounts_sheets_list()
@@ -225,11 +228,11 @@ For i = LBound(act_num) To UBound(act_num)
         If Not visible_activityes(.Range("B8"), activityEnd) Then
             .Visible = False
         Else
+            .Visible = True
             Dim starting_formatRow As Long
             Dim endingFormatRow As Long
             starting_formatRow = .Range("B:B").Find("Total*").Row + 5
             endingFormatRow = .Range("b:b").Find("Notas").Row - 3
-            .Visible = True
             'set up print area
             .PageSetup.printArea = .Range(.Cells(2, 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).Address
             'give format to the account sums
