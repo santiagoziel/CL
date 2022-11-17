@@ -408,7 +408,7 @@ If Not check_PEI_visibility Then
    Sheets("PE - Inventario").Visible = False
    Exit Sub
 End If
-
+'Sheets("PE - Inventario").Rows.EntireRow.Hidden = False
 Dim print_area_adress As String
 print_area_adress = "b2:t6"
 
@@ -426,27 +426,18 @@ FirstCell = tableEnd.Address
 Dim pageRange As Range
 Do
     Set pageRange = Sheets("PE - Inventario").Range("b" & CStr(TableStart.Row - 2) & ":b" & CStr(tableEnd.Row))
-    On Error GoTo errHandler
-        pageRange.SpecialCells(xlCellTypeVisible).Select
-    On Error GoTo 0
-pageSetter:
-    If (Not pageRange Is Nothing) Then
+    
     If (pageRange.SpecialCells(xlCellTypeVisible).Cells.Count > 81) Then
-        'si supera, genera nueva print area con valor incial y anteiror
         print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 2) & ":t" & CStr(previusTableEnd.Row)
         Set TableStart = Sheets("PE - Inventario").Cells.Find(what:="Capital Comprometido - Commitment", after:=previusTableEnd)
     End If
-    End If
+    
     Set previusTableEnd = tableEnd
-    Set tableEnd = Sheets("PE - Inventario").Cells.Find(what:="Total Ingresos Commitment", after:=tableEnd)
+    Set tableEnd = Sheets("PE - Inventario").Cells.Find(what:="Total Ingresos Commitment", after:=previusTableEnd)
 Loop While FirstCell <> tableEnd.Address
 
-print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 3) & ":k" & CStr(previusTableEnd.Row)
-Sheets("Saldos Cash").PageSetup.printArea = print_area_adress
-Exit Sub
-errHandler:
-Set pageRange = Nothing
-GoTo pageSetter
+print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 2) & ":t" & CStr(previusTableEnd.Row)
+Sheets("PE - Inventario").PageSetup.printArea = print_area_adress
 End Sub
 
 Function check_PEI_visibility() As Boolean
@@ -630,3 +621,4 @@ Function get_number_activities(sheet_name As String) As Integer
     
     get_number_activities = rgFoundbot.Row - rgFoundtop.Row - 3
 End Function
+
