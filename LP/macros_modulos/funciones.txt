@@ -189,13 +189,14 @@ Dim lCol As Integer
 'Find the last non-blank cell in row 1
 lCol = Cells(5, Columns.Count).End(xlToLeft).Column
 pivot_list_is_empty = True
-Dim i As Integer
-For i = start_col To lCol
-    If pt.PivotFields(ws.Cells(5, i).Text).PivotItems.Count > 0 Then
+Dim pf As PivotField
+For Each pf In pt.PivotFields
+    If pt.PivotFields(pf.Name).PivotItems.Count > 0 Then
         pivot_list_is_empty = False
         Exit For
     End If
 Next
+
 pt.DisplayFieldCaptions = True
 Rows("5:5").EntireRow.AutoFit
 End Function
@@ -621,4 +622,5 @@ Function get_number_activities(sheet_name As String) As Integer
     
     get_number_activities = rgFoundbot.Row - rgFoundtop.Row - 3
 End Function
+
 
