@@ -13,9 +13,15 @@ End If
 Sheets("Cuentas").Unprotect "JUANG2022"
 'gen table
 With Sheets("Cuentas")
+    .Cells.EntireRow.Hidden = False
     Dim lRow As Long
-    lRow = .Cells(Rows.Count, 4).End(xlUp).Row
-    lRow = IIf(lRow > 5, lRow, 6)
+    If .Range("c6").Value = "" Then
+        MsgBox "Seguro que la lista de cunetas comienza en la hoja Cuentas en la fila 6"
+    ElseIf .Range("c7").Value = "" Then
+        lRow = 6
+    Else
+        lRow = .Cells(6, 3).End(xlDown).Row
+    End If
     .ListObjects.Add(xlSrcRange, .Range("$B$4:$D$" & CStr(lRow)), , xlYes).Name = _
         "TablaCuentas"
     .ListObjects("TablaCuentas").TableStyle = ""
