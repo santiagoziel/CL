@@ -169,7 +169,6 @@ For i = LBound(pivotSheets) To UBound(pivotSheets)
         If pivot_list_is_empty(pivotSheets(i)) Then
             .Visible = False
         Else
-            .Visible = True
             .PageSetup.printArea = Union(.Range(.Cells(2, 2), .Cells(4, .PivotTables(1).TableRange1.Columns.Count + 1)), .PivotTables(1).TableRange1).Address
         End If
     End With
@@ -178,6 +177,7 @@ End Sub
 Function pivot_list_is_empty(sheetName As Variant) As Boolean
 Dim ws As Worksheet
 Set ws = Sheets(sheetName)
+ws.Visible = True
 ws.Activate
 Dim pt As PivotTable
 Set pt = ws.PivotTables(1)
@@ -189,14 +189,16 @@ Dim lCol As Integer
 'Find the last non-blank cell in row 1
 lCol = Cells(5, Columns.Count).End(xlToLeft).Column
 pivot_list_is_empty = True
-Dim pf As PivotField
-For Each pf In pt.PivotFields
-    If pt.PivotFields(pf.Name).PivotItems.Count > 0 Then
+Dim cell As Range
+On Error GoTo outRutine
+For Each cell In pt.DataBodyRange
+    If cell.Value <> "" And cell.Value <> 0 Then
         pivot_list_is_empty = False
         Exit For
     End If
 Next
 
+outRutine:
 pt.DisplayFieldCaptions = True
 Rows("5:5").EntireRow.AutoFit
 End Function
