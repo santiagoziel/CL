@@ -495,8 +495,11 @@ End Sub
 Sub protect_All()
 Dim WS_Count As Integer
 
+Dim lRow As Integer
+lRow = Sheets("SheetNames").Cells(Rows.Count, 5).End(xlUp).Row
+
 Dim protected_sheets As Variant
-protected_sheets = Sheets("SheetNames").Range("e2:e4").Value2
+protected_sheets = Sheets("SheetNames").Range("e2:e" & CStr(lRow)).Value2
 
 WS_Count = ActiveWorkbook.Worksheets.Count
 Dim i As Integer
@@ -505,7 +508,7 @@ For i = 1 To WS_Count
 currentSheetName = ActiveWorkbook.Worksheets(i).Name
 If (currentSheetName = "1 Ingresos Acum & No Acum") Then
     Sheets(currentSheetName).Protect Password:="LP2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
-ElseIf Not IsInArray(currentSheetName, protected_sheets) Then
+ElseIf IsInArray(currentSheetName, protected_sheets) Then
     Sheets(currentSheetName).Protect Password:="JUANG2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
 End If
 Next i
