@@ -630,5 +630,3 @@ Function get_number_activities(sheet_name As String) As Integer
     
     get_number_activities = rgFoundbot.Row - rgFoundtop.Row - 3
 End Function
-
-
