@@ -2,15 +2,12 @@
 Repositorio para que pueda dejar de enviarle Zips a Lorenza y descanse mi alma
 
 # TODOS
-- [x] sumatorias ocultar vacias
-
-- [x] checar filas ocultas despues de agregar cuenta
-
-- [x] saldos cash checar area de impresion
-
-- [x] Pe-Retenciones
-
-- [ ] checar que pedo con pivot tables
+- [x] ocultar inventario bonos
+- [ ] sumatorias formato y ocultar dividendos nacionales, reducciones capital, (B -> G)
+- [ ] cambiar el azul de formato sumatorias
+- [ ] checar las hojas que se bloquean, remover pivots
+- [ ] checar grosores de las columnas
+- [ ] PE inventario ocultar filas sin datos (F)
 
 # usefull comands
 

@@ -324,7 +324,10 @@ Function checkTable(tableEnd As Range, previus As Range) As Boolean
         
     Dim table As Range
     Set table = Sheets("Inventario de bonos").Range(TableStart, tableEnd.Offset(1, 0))
-    checkTable = Sheets("Inventario de bonos").Range("b" & CStr(table.Row + 1)).End(xlDown).Row <> table.Row + table.Rows.Count - 2
+    
+    Dim TopRowFind As Range
+    Set TopRowFind = Sheets("Inventario de bonos").Range(table.Address).Find(what:="Asset Name")
+    checkTable = Sheets("Inventario de bonos").Range("b" & CStr(TopRowFind.Row)).End(xlDown).Row <> table.Row + table.Rows.Count - 2
     table.EntireRow.Hidden = Not checkTable
 End Function
 
