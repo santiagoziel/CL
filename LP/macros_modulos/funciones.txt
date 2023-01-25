@@ -25,9 +25,12 @@ End Sub
 Sub check_sheets_visibility()
     Dim very_hidden_sheets As Variant
     very_hidden_sheets = Sheets("SheetNames").Range("c2").Value2
-
+    
+    Dim lvisibleSheet As Integer
+    lvisibleSheet = Sheets("SheetNames").Cells(Rows.Count, 1).End(xlUp).Row
+    
     Dim visible_sheets As Variant
-    visible_sheets = Sheets("SheetNames").Range("a2:a29").Value2
+    visible_sheets = Sheets("SheetNames").Range("a2:a" & CStr(lvisibleSheet)).Value2
     
     Dim WS_Count As Integer
     WS_Count = ActiveWorkbook.Worksheets.Count

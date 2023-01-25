@@ -6,8 +6,8 @@ Repositorio para que pueda dejar de enviarle Zips a Lorenza y descanse mi alma
 - [ ] sumatorias formato (no he podido recrear error)
 - [x] ocultar dividendos nacionales, reducciones capital, modificar columna de chekeo
 - [x] cambiar el azul de formato sumatorias
-- [ ] checar las hojas que se bloquean, remover pivots
-- [ ] checar grosores de las columnas
+- [x] checar las hojas que se bloquean, remover pivots
+- [x] checar grosores de las columnas
 - [ ] PE inventario ocultar filas sin datos (F)
 
 # usefull comands
