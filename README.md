@@ -8,7 +8,7 @@ Repositorio para que pueda dejar de enviarle Zips a Lorenza y descanse mi alma
 - [x] cambiar el azul de formato sumatorias
 - [x] checar las hojas que se bloquean, remover pivots
 - [x] checar grosores de las columnas
-- [ ] PE inventario ocultar filas sin datos (F)
+- [x] PE inventario ocultar filas sin datos (F)
 
 # usefull comands
 

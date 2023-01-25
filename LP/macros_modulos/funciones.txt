@@ -40,11 +40,11 @@ Sub check_sheets_visibility()
     For i = 1 To WS_Count
         currentSheetName = ActiveWorkbook.Worksheets(i).Name
         If IsInArray(currentSheetName, very_hidden_sheets) Then
-            Sheets(currentSheetName).Visible = xlSheetVeryHidden
+            Sheets(currentSheetName).visible = xlSheetVeryHidden
         ElseIf IsInArray(currentSheetName, visible_sheets) Then
-            Sheets(currentSheetName).Visible = True
+            Sheets(currentSheetName).visible = True
         Else
-            Sheets(currentSheetName).Visible = False
+            Sheets(currentSheetName).visible = False
         End If
     Next i
 End Sub
@@ -64,7 +64,7 @@ Sub set_ingresos_PrintArea()
     secondSectionEmpty = check_and_hide("$K$62:$K$79", "$B$52:$K$81")
     
     If firstSectionEmpty And secondSectionEmpty Then
-        Sheets("1 Ingresos Acum & No Acum").Visible = False
+        Sheets("1 Ingresos Acum & No Acum").visible = False
         Exit Sub
     End If
     If Not firstSectionEmpty Then
@@ -98,13 +98,13 @@ Function check_and_hide(checkArea As String, hideArea As String, Optional sheetN
     If hide Then
         Dim hideRange As Range
         Set hideRange = Sheets(sheetName).Range(hideArea)
-        hideRange.EntireRow.Hidden = True
+        hideRange.EntireRow.hidden = True
     End If
     check_and_hide = hide
 End Function
 
 Sub check_ingresos_BMV()
-Sheets("2 Ingresos BMV & SIC").Visible = hasvalues("f10:j10")
+Sheets("2 Ingresos BMV & SIC").visible = hasvalues("f10:j10")
 End Sub
 
 Function hasvalues(area As String) As Boolean
@@ -129,7 +129,7 @@ Dim secondSectionEmpty As Boolean
 secondSectionEmpty = isEmpty("h21:j21")
 With Sheets("3 Ingresos 10% Ad - Dividendos")
     If firstSectionEmpty And secondSectionEmpty Then
-            .Visible = False
+            .visible = False
             Exit Sub
     End If
     
@@ -170,7 +170,7 @@ For i = LBound(pivotSheets) To UBound(pivotSheets)
     'checar si tiene algun dato
     With Sheets(pivotSheets(i))
         If pivot_list_is_empty(pivotSheets(i)) Then
-            .Visible = False
+            .visible = False
         Else
             .PageSetup.printArea = Union(.Range(.Cells(2, 2), .Cells(4, .PivotTables(1).TableRange1.Columns.Count + 1)), .PivotTables(1).TableRange1).Address
         End If
@@ -180,7 +180,7 @@ End Sub
 Function pivot_list_is_empty(sheetName As Variant) As Boolean
 Dim ws As Worksheet
 Set ws = Sheets(sheetName)
-ws.Visible = True
+ws.visible = True
 ws.Activate
 Dim pt As PivotTable
 Set pt = ws.PivotTables(1)
@@ -212,14 +212,14 @@ checkValueColumn = act_start.Worksheet.Range("b1:q7").Find("? ?oneda ?riginal").
 Dim acts As Range
 Set acts = Range(act_start, act_end).Offset(0, checkValueColumn - 2)
 
-acts.EntireRow.Hidden = False
+acts.EntireRow.hidden = False
 
 Dim cell As Range
 For Each cell In acts
     If Len(cell.Text) > 1 Then
         visible_activityes = True
     Else
-        cell.EntireRow.Hidden = True
+        cell.EntireRow.hidden = True
     End If
 Next
 visible_activityes = IIf(visible_activityes, visible_activityes, False)
@@ -237,9 +237,9 @@ For i = LBound(act_num) To UBound(act_num)
         Dim activityEnd As Range
         Set activityEnd = .Range("B:B").Find("Total*").Offset(-2, 0)
         If Not visible_activityes(.Range("B8"), activityEnd) Then
-            .Visible = False
+            .visible = False
         Else
-            .Visible = True
+            .visible = True
             Dim starting_formatRow As Long
             Dim endingFormatRow As Long
             starting_formatRow = .Range("B:B").Find("Total*").Row + 5
@@ -282,7 +282,7 @@ Selection.Font.Bold = True
 End Sub
 
 Sub set_inventario_bonos_printArea()
-Sheets("Inventario de bonos").Cells.EntireRow.Hidden = False
+Sheets("Inventario de bonos").Cells.EntireRow.hidden = False
 Dim print_area_adress As String
 print_area_adress = "b2:n4"
 
@@ -319,7 +319,7 @@ If xr Then
     print_area_adress = print_area_adress & ",b" & TableStart.Row & ":n" & CStr(previusTableEnd.Row)
     Sheets("Inventario de bonos").PageSetup.printArea = print_area_adress
 Else
-    Sheets("Inventario de bonos").Visible = False
+    Sheets("Inventario de bonos").visible = False
 End If
 End Sub
 
@@ -337,13 +337,13 @@ Function checkTable(tableEnd As Range, previus As Range) As Boolean
     Dim TopRowFind As Range
     Set TopRowFind = Sheets("Inventario de bonos").Range(table.Address).Find(what:="Asset Name")
     checkTable = Sheets("Inventario de bonos").Range("b" & CStr(TopRowFind.Row)).End(xlDown).Row <> table.Row + table.Rows.Count - 2
-    table.EntireRow.Hidden = Not checkTable
+    table.EntireRow.hidden = Not checkTable
 End Function
 
 Sub set_saldos_printArea()
 If Not check_SC_visibility Then
-   Sheets("Saldos Cash").Visible = False
-   Sheets("AAI").Visible = False
+   Sheets("Saldos Cash").visible = False
+   Sheets("AAI").visible = False
    Exit Sub
 End If
 
@@ -394,12 +394,12 @@ Function find_non_hidden(what As String, Optional lookRange As Range = Nothing, 
         End If
         
         Set after = found
-    Loop While found.Cells.EntireRow.Hidden
+    Loop While found.Cells.EntireRow.hidden
     Set find_non_hidden = found
     
 End Function
 Function check_SC_visibility() As Boolean
-Sheets("Saldos Cash").Cells.EntireRow.Hidden = False
+Sheets("Saldos Cash").Cells.EntireRow.hidden = False
 Dim lRow As Integer
 lRow = Sheets("Saldos Cash").Cells(Rows.Count, 2).End(xlUp).Row
 'Debug.Print lRow
@@ -419,16 +419,17 @@ Next
 
 End Function
 Sub set_Pe_print_area()
-If Not check_PEI_visibility Then
-   Sheets("PE - Inventario").Visible = False
-   Exit Sub
-End If
-'Sheets("PE - Inventario").Rows.EntireRow.Hidden = False
+
+Sheets("PE - Inventario").Rows.EntireRow.hidden = False
 Dim print_area_adress As String
 print_area_adress = "b2:t6"
 
 Dim TableStart As Range
 Set TableStart = Sheets("PE - Inventario").Cells.Find(what:="Capital Comprometido - Commitment")
+
+
+Dim PageStart As Range
+Set PageStart = TableStart.Offset(-5, 0)
 
 Dim tableEnd As Range
 Set tableEnd = Sheets("PE - Inventario").Cells.Find(what:="Total Ingresos Commitment")
@@ -439,39 +440,53 @@ Dim FirstCell As String
 FirstCell = tableEnd.Address
 
 Dim pageRange As Range
+Dim tableRange As Range
+
+Dim visible As Boolean
+visible = False
+'por cada tabla
 Do
-    Set pageRange = Sheets("PE - Inventario").Range("b" & CStr(TableStart.Row - 2) & ":b" & CStr(tableEnd.Row))
+    Set pageRange = Sheets("PE - Inventario").Range("b" & CStr(PageStart.Row - 2) & ":b" & CStr(tableEnd.Row + 1))
+    Set tableRange = Sheets("PE - Inventario").Range("b" & CStr(TableStart.Row - 2) & ":b" & CStr(tableEnd.Row + 1))
+    
+    Dim is_table_visible As Boolean
+    is_table_visible = handleTable(tableRange)
+    visible = IIf(visible, visible, is_table_visible)
     
     If (pageRange.SpecialCells(xlCellTypeVisible).Cells.Count > 81) Then
-        print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 2) & ":t" & CStr(previusTableEnd.Row)
+        print_area_adress = print_area_adress & ",b" & CStr(PageStart.Row - 2) & ":t" & CStr(previusTableEnd.Row)
         Set TableStart = Sheets("PE - Inventario").Cells.Find(what:="Capital Comprometido - Commitment", after:=previusTableEnd)
     End If
     
+    Set TableStart = Sheets("PE - Inventario").Cells.Find(what:="Capital Comprometido - Commitment", after:=tableEnd)
     Set previusTableEnd = tableEnd
     Set tableEnd = Sheets("PE - Inventario").Cells.Find(what:="Total Ingresos Commitment", after:=previusTableEnd)
 Loop While FirstCell <> tableEnd.Address
 
-print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 2) & ":t" & CStr(previusTableEnd.Row)
-Sheets("PE - Inventario").PageSetup.printArea = print_area_adress
+If visible Then
+    print_area_adress = print_area_adress & ",b" & CStr(TableStart.Row - 2) & ":t" & CStr(previusTableEnd.Row)
+    Sheets("PE - Inventario").PageSetup.printArea = print_area_adress
+End If
+Sheets("PE - Inventario").visible = visible
+
 End Sub
 
-Function check_PEI_visibility() As Boolean
-Sheets("PE - Inventario").Cells.EntireRow.Hidden = False
-Dim lRow As Integer
-lRow = Sheets("PE - Inventario").Cells(Rows.Count, 19).End(xlUp).Row
-Dim number_of_tables As Integer
-number_of_tables = (lRow - 10) / 24
-
-Dim i As Integer
-For i = 0 To number_of_tables - 1
+Function handleTable(tableRange As Range) As Boolean
     Dim checkArea As String
-    checkArea = "h" & CStr(9 + (i * 26)) & ":p" & CStr(27 + (i * 26))
+    checkArea = "f" & CStr(tableRange.Row + 2) & ":p" & CStr(tableRange.Row + tableRange.Rows.Count - 6)
     Dim hideArea As String
-    hideArea = "b" & CStr(7 + (i * 26)) & ":t" & CStr(32 + (i * 26))
-    Dim needToHide As Boolean
-    needToHide = check_and_hide(checkArea, hideArea, "PE - Inventario")
-    check_PEI_visibility = IIf(check_PEI_visibility, check_PEI_visibility, Not needToHide)
-Next
+    hideArea = "b" & CStr(tableRange.Row) & ":t" & CStr(tableRange.Row + tableRange.Rows.Count - 1)
+    Dim hidden As Boolean
+    hidden = check_and_hide(checkArea, hideArea, "PE - Inventario")
+    
+    If Not hidden Then
+        Dim i As Integer
+        For i = tableRange.Row + 9 To tableRange.Row + tableRange.Rows.Count - 6
+            Sheets("PE - Inventario").Cells(i, 6).EntireRow.hidden = Sheets("PE - Inventario").Cells(i, 6).Value = ""
+        Next i
+    End If
+    
+    handleTable = Not hidden
 
 End Function
 Sub copy_values_from_sheet(origin As Workbook, copy As Workbook, sheetName As String)
@@ -520,7 +535,11 @@ Dim i As Integer
 Dim currentSheetName As String
 For i = 1 To WS_Count
 currentSheetName = ActiveWorkbook.Worksheets(i).Name
-Sheets(currentSheetName).Cells.EntireColumn.AutoFit
+
+If Sheets(currentSheetName).visible Then
+    Sheets(currentSheetName).Cells.EntireColumn.AutoFit
+End If
+
 If (currentSheetName = "1 Ingresos Acum & No Acum") Then
     Sheets(currentSheetName).Protect Password:="LP2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
 ElseIf IsInArray(currentSheetName, protected_sheets) Then
