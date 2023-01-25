@@ -203,8 +203,11 @@ pt.DisplayFieldCaptions = True
 Rows("5:5").EntireRow.AutoFit
 End Function
 Function visible_activityes(act_start As Range, act_end As Range) As Boolean
+
+Dim checkValueColumn As Integer
+checkValueColumn = act_start.Worksheet.Range("b1:q7").Find("? ?oneda ?riginal").Column
 Dim acts As Range
-Set acts = Range(act_start, act_end)
+Set acts = Range(act_start, act_end).Offset(0, checkValueColumn - 2)
 
 acts.EntireRow.Hidden = False
 
@@ -221,7 +224,10 @@ End Function
 
 Sub go_through_accounts_sheets_list()
 Dim act_num As Variant
-act_num = Sheets("backend").Range("p2:q13").Value2
+
+act_num = Sheets("backend").Range("p2:q14").Value2
+
+
 Dim i As Integer
 For i = LBound(act_num) To UBound(act_num)
         With Sheets(act_num(i, 1))
@@ -585,9 +591,14 @@ For i = LBound(actvty_message) To UBound(actvty_message)
     Columns("E:E").EntireColumn.AutoFit
 Next
 
-Call dealwithsuperrareact(act_num, AccountsQuantity)
+Call dealwithsuperrareact(AccountsQuantity)
 End Sub
-Sub dealwithsuperrareact(act_num As Integer, AccountsQunty As Integer)
+Sub dealwithsuperrareact(AccountsQunty As Integer)
+'REMOVE after testing
+'Sub dealwithsuperrareact()
+'Dim AccountsQunty As Integer
+AccountsQunty = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+    Dim act_num As Integer
     act_num = get_number_activities("Dividendos Nacionales")
     Dim rgFound As Range
     Dim rgTodelete As Range
