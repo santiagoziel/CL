@@ -268,9 +268,9 @@ End Sub
 Sub formatBlueLines(rowToFormat As Range)
     With rowToFormat.Borders(xlEdgeBottom)
         .LineStyle = xlContinuous
-        .ThemeColor = 5
+        .Color = 16760971
         .TintAndShade = 0
-        .Weight = xlThin
+        .Weight = 2
     End With
 End Sub
 Sub changetonumberFOrmat()
