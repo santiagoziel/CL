@@ -520,6 +520,7 @@ Dim i As Integer
 Dim currentSheetName As String
 For i = 1 To WS_Count
 currentSheetName = ActiveWorkbook.Worksheets(i).Name
+Sheets(currentSheetName).Cells.EntireColumn.AutoFit
 If (currentSheetName = "1 Ingresos Acum & No Acum") Then
     Sheets(currentSheetName).Protect Password:="LP2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
 ElseIf IsInArray(currentSheetName, protected_sheets) Then
