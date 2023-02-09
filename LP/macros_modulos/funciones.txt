@@ -536,9 +536,9 @@ Dim currentSheetName As String
 For i = 1 To WS_Count
 currentSheetName = ActiveWorkbook.Worksheets(i).Name
 
-If Sheets(currentSheetName).visible Then
-    Sheets(currentSheetName).Cells.EntireColumn.AutoFit
-End If
+'If Sheets(currentSheetName).visible Then
+'    Sheets(currentSheetName).Cells.EntireColumn.AutoFit
+'End If
 
 If (currentSheetName = "1 Ingresos Acum & No Acum") Then
     Sheets(currentSheetName).Protect Password:="LP2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
