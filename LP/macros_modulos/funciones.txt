@@ -565,113 +565,113 @@ ElseIf IsInArray(currentSheetName, protected_sheets) Then
 End If
 Next i
 End Sub
-Sub dealWithMostAcc()
-Dim AccountsQuantity As Integer
-AccountsQuantity = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
-
-Dim actvty_message As Variant
-actvty_message = Sheets("backend").Range("R2:S10").Value2
-Dim i As Integer
-Dim act_num As Integer
-For i = LBound(actvty_message) To UBound(actvty_message)
-    act_num = get_number_activities(CStr(actvty_message(i, 1)))
-    Dim rgFound As Range
-    Dim rgTodelete As Range
-    Set rgFound = Range("E:E").Find(actvty_message(i, 2))
-    Set rgTodelete = rgFound
-    Set rgTodelete = rgTodelete.Resize(1, 10).Offset(0, -3)
-    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
-    rgTodelete.Clear
-    'pon mensajes nuevos
-    'por cada cuenta
-    rgFound.Resize(AccountsQuantity, 1).Value = actvty_message(i, 2)
-    rgFound.Resize(AccountsQuantity, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-4]"
-    rgFound.Resize(AccountsQuantity, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C7:R" & CStr(act_num + 8) & "C7)"
-    rgFound.Resize(AccountsQuantity, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-3],R7C9:R" & CStr(act_num + 8) & "C9)"
-    rgFound.Resize(AccountsQuantity, 1).Offset(0, 6).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-5],R7C11:R" & CStr(act_num + 8) & "C11)"
-    
-    'agregar nuevo gran total y notas con formato y todo
-    rgFound.Offset(AccountsQuantity + 1, 0).Value = "Gran total de intereses percibidos en el ejercicio en la Cta. "
-    rgFound.Offset(AccountsQuantity + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C7:R" & CStr(rgFound.Row + AccountsQuantity) & "C7)"
-    rgFound.Offset(AccountsQuantity + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C9:R" & CStr(rgFound.Row + AccountsQuantity) & "C9)"
-    rgFound.Offset(AccountsQuantity + 1, 6).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C11:R" & CStr(rgFound.Row + AccountsQuantity) & "C11)"
-    rgFound.Offset(AccountsQuantity + 4, -3).Value = "Notas:"
-    Columns("E:E").EntireColumn.AutoFit
-Next
-End Sub
-Sub deal_edgeCases_Acc()
-Dim AccountsQuantity As Integer
-AccountsQuantity = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
-
-Dim actvty_message As Variant
-actvty_message = Sheets("backend").Range("R11:S13").Value2
-Dim i As Integer
-Dim act_num As Integer
-For i = LBound(actvty_message) To UBound(actvty_message)
-    act_num = get_number_activities(CStr(actvty_message(i, 1)))
-    Dim rgFound As Range
-    Dim rgTodelete As Range
-    Set rgFound = Range("E:E").Find(actvty_message(i, 2))
-    Set rgTodelete = rgFound
-    Set rgTodelete = rgTodelete.Resize(1, 9).Offset(0, -3)
-    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
-    rgTodelete.Clear
-    'pon mensajes nuevos
-    'por cada cuenta
-    
-    rgFound.Resize(AccountsQuantity, 1).Value = actvty_message(i, 2)
-    rgFound.Resize(AccountsQuantity, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-4]"
-    rgFound.Resize(AccountsQuantity, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C7:R" & CStr(act_num + 8) & "C7)"
-    rgFound.Resize(AccountsQuantity, 1).Offset(0, 5).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-4],R7C10:R" & CStr(act_num + 8) & "C10)"
-    
-    'Agregar nuevo gran total y notas con formato y todo
-    rgFound.Offset(AccountsQuantity + 1, 1).Value = "Gran total"
-    rgFound.Offset(AccountsQuantity + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C7:R" & CStr(rgFound.Row + AccountsQuantity) & "C7)"
-    rgFound.Offset(AccountsQuantity + 1, 5).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C10:R" & CStr(rgFound.Row + AccountsQuantity) & "C10)"
-    rgFound.Offset(AccountsQuantity + 4, -3).Value = "Notas:"
-    Columns("E:E").EntireColumn.AutoFit
-Next
-
-Call dealwithsuperrareact(AccountsQuantity)
-End Sub
-Sub dealwithsuperrareact(AccountsQunty As Integer)
-'REMOVE after testing
-'Sub dealwithsuperrareact()
-'Dim AccountsQunty As Integer
-AccountsQunty = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
-    Dim act_num As Integer
-    act_num = get_number_activities("Dividendos Nacionales")
-    Dim rgFound As Range
-    Dim rgTodelete As Range
-    Set rgFound = Range("D:D").Find("Total de dividendos de emisoras nacionales percibidos en la Cta.")
-    Set rgTodelete = rgFound
-    Set rgTodelete = rgTodelete.Resize(1, 16).Offset(0, -2)
-    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
-    rgTodelete.Clear
-    'pon mensajes nuevos
-    'por cada cuenta
-    rgFound.Resize(AccountsQunty, 1).Value = "Total de dividendos de emisoras nacionales percibidos en la Cta."
-    rgFound.Resize(AccountsQunty, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-3]"
-    rgFound.Resize(AccountsQunty, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C6:R" & CStr(act_num + 8) & "C6)"
-    rgFound.Resize(AccountsQunty, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-3],R7C8:R" & CStr(act_num + 8) & "C8)"
-    rgFound.Resize(AccountsQunty, 1).Offset(0, 5).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-4],R7C9:R" & CStr(act_num + 8) & "C9)"
-    rgFound.Resize(AccountsQunty, 1).Offset(0, 9).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-8],R7C13:R" & CStr(act_num + 8) & "C13)"
-    rgFound.Resize(AccountsQunty, 1).Offset(0, 11).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-9],R7C14:R" & CStr(act_num + 8) & "C14)"
-    rgFound.Resize(AccountsQunty, 1).Offset(0, 13).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-11],R7C16:R" & CStr(act_num + 8) & "C16)"
-    rgFound.Resize(AccountsQunty, 1).Offset(0, 14).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-12],R7C17:R" & CStr(act_num + 8) & "C17)"
-
-    'Agregar nuevo gran total y notas con formato y todo
-    rgFound.Offset(AccountsQunty + 1, 0).Value = "Gran total de dividendos percibidos de emisoras nacionales "
-    rgFound.Offset(AccountsQunty + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C6:R" & CStr(rgFound.Row + AccountsQunty) & "C6)"
-    rgFound.Offset(AccountsQunty + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C8:R" & CStr(rgFound.Row + AccountsQunty) & "C8)"
-    rgFound.Offset(AccountsQunty + 1, 5).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C9:R" & CStr(rgFound.Row + AccountsQunty) & "C9)"
-    rgFound.Offset(AccountsQunty + 1, 9).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C13:R" & CStr(rgFound.Row + AccountsQunty) & "C13)"
-    rgFound.Offset(AccountsQunty + 1, 11).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C14:R" & CStr(rgFound.Row + AccountsQunty) & "C14)"
-    rgFound.Offset(AccountsQunty + 1, 13).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C16:R" & CStr(rgFound.Row + AccountsQunty) & "C16)"
-    rgFound.Offset(AccountsQunty + 1, 14).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C17:R" & CStr(rgFound.Row + AccountsQunty) & "C17)"
-    rgFound.Offset(AccountsQunty + 4, -2).Value = "Notas:"
-    Columns("D:D").EntireColumn.AutoFit
-End Sub
+'Sub dealWithMostAcc()
+'Dim AccountsQuantity As Integer
+'AccountsQuantity = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+'
+'Dim actvty_message As Variant
+'actvty_message = Sheets("backend").Range("R2:S10").Value2
+'Dim i As Integer
+'Dim act_num As Integer
+'For i = LBound(actvty_message) To UBound(actvty_message)
+'    act_num = get_number_activities(CStr(actvty_message(i, 1)))
+'    Dim rgFound As Range
+'    Dim rgTodelete As Range
+'    Set rgFound = Range("E:E").Find(actvty_message(i, 2))
+'    Set rgTodelete = rgFound
+'    Set rgTodelete = rgTodelete.Resize(1, 10).Offset(0, -3)
+'    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+'    rgTodelete.Clear
+'    'pon mensajes nuevos
+'    'por cada cuenta
+'    rgFound.Resize(AccountsQuantity, 1).Value = actvty_message(i, 2)
+'    rgFound.Resize(AccountsQuantity, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-4]"
+'    rgFound.Resize(AccountsQuantity, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C7:R" & CStr(act_num + 8) & "C7)"
+'    rgFound.Resize(AccountsQuantity, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-3],R7C9:R" & CStr(act_num + 8) & "C9)"
+'    rgFound.Resize(AccountsQuantity, 1).Offset(0, 6).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-5],R7C11:R" & CStr(act_num + 8) & "C11)"
+'
+'    'agregar nuevo gran total y notas con formato y todo
+'    rgFound.Offset(AccountsQuantity + 1, 0).Value = "Gran total de intereses percibidos en el ejercicio en la Cta. "
+'    rgFound.Offset(AccountsQuantity + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C7:R" & CStr(rgFound.Row + AccountsQuantity) & "C7)"
+'    rgFound.Offset(AccountsQuantity + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C9:R" & CStr(rgFound.Row + AccountsQuantity) & "C9)"
+'    rgFound.Offset(AccountsQuantity + 1, 6).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C11:R" & CStr(rgFound.Row + AccountsQuantity) & "C11)"
+'    rgFound.Offset(AccountsQuantity + 4, -3).Value = "Notas:"
+'    Columns("E:E").EntireColumn.AutoFit
+'Next
+'End Sub
+'Sub deal_edgeCases_Acc()
+'Dim AccountsQuantity As Integer
+'AccountsQuantity = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+'
+'Dim actvty_message As Variant
+'actvty_message = Sheets("backend").Range("R11:S13").Value2
+'Dim i As Integer
+'Dim act_num As Integer
+'For i = LBound(actvty_message) To UBound(actvty_message)
+'    act_num = get_number_activities(CStr(actvty_message(i, 1)))
+'    Dim rgFound As Range
+'    Dim rgTodelete As Range
+'    Set rgFound = Range("E:E").Find(actvty_message(i, 2))
+'    Set rgTodelete = rgFound
+'    Set rgTodelete = rgTodelete.Resize(1, 9).Offset(0, -3)
+'    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+'    rgTodelete.Clear
+'    'pon mensajes nuevos
+'    'por cada cuenta
+'
+'    rgFound.Resize(AccountsQuantity, 1).Value = actvty_message(i, 2)
+'    rgFound.Resize(AccountsQuantity, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-4]"
+'    rgFound.Resize(AccountsQuantity, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C7:R" & CStr(act_num + 8) & "C7)"
+'    rgFound.Resize(AccountsQuantity, 1).Offset(0, 5).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-4],R7C10:R" & CStr(act_num + 8) & "C10)"
+'
+'    'Agregar nuevo gran total y notas con formato y todo
+'    rgFound.Offset(AccountsQuantity + 1, 1).Value = "Gran total"
+'    rgFound.Offset(AccountsQuantity + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C7:R" & CStr(rgFound.Row + AccountsQuantity) & "C7)"
+'    rgFound.Offset(AccountsQuantity + 1, 5).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C10:R" & CStr(rgFound.Row + AccountsQuantity) & "C10)"
+'    rgFound.Offset(AccountsQuantity + 4, -3).Value = "Notas:"
+'    Columns("E:E").EntireColumn.AutoFit
+'Next
+'
+'Call dealwithsuperrareact(AccountsQuantity)
+'End Sub
+'Sub dealwithsuperrareact(AccountsQunty As Integer)
+''REMOVE after testing
+''Sub dealwithsuperrareact()
+''Dim AccountsQunty As Integer
+'AccountsQunty = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
+'    Dim act_num As Integer
+'    act_num = get_number_activities("Dividendos Nacionales")
+'    Dim rgFound As Range
+'    Dim rgTodelete As Range
+'    Set rgFound = Range("D:D").Find("Total de dividendos de emisoras nacionales percibidos en la Cta.")
+'    Set rgTodelete = rgFound
+'    Set rgTodelete = rgTodelete.Resize(1, 16).Offset(0, -2)
+'    Set rgTodelete = Range(rgTodelete, rgTodelete.End(xlDown))
+'    rgTodelete.Clear
+'    'pon mensajes nuevos
+'    'por cada cuenta
+'    rgFound.Resize(AccountsQunty, 1).Value = "Total de dividendos de emisoras nacionales percibidos en la Cta."
+'    rgFound.Resize(AccountsQunty, 1).Offset(0, 1).FormulaR1C1 = "=Cuentas!R[-" & CStr(8 + act_num) & "]C[-3]"
+'    rgFound.Resize(AccountsQunty, 1).Offset(0, 2).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-1],R7C6:R" & CStr(act_num + 8) & "C6)"
+'    rgFound.Resize(AccountsQunty, 1).Offset(0, 4).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-3],R7C8:R" & CStr(act_num + 8) & "C8)"
+'    rgFound.Resize(AccountsQunty, 1).Offset(0, 5).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-4],R7C9:R" & CStr(act_num + 8) & "C9)"
+'    rgFound.Resize(AccountsQunty, 1).Offset(0, 9).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-8],R7C13:R" & CStr(act_num + 8) & "C13)"
+'    rgFound.Resize(AccountsQunty, 1).Offset(0, 11).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-9],R7C14:R" & CStr(act_num + 8) & "C14)"
+'    rgFound.Resize(AccountsQunty, 1).Offset(0, 13).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-11],R7C16:R" & CStr(act_num + 8) & "C16)"
+'    rgFound.Resize(AccountsQunty, 1).Offset(0, 14).FormulaR1C1 = "=SUMIF(R7C2:R" & CStr(act_num + 8) & "C2,RC[-12],R7C17:R" & CStr(act_num + 8) & "C17)"
+'
+'    'Agregar nuevo gran total y notas con formato y todo
+'    rgFound.Offset(AccountsQunty + 1, 0).Value = "Gran total de dividendos percibidos de emisoras nacionales "
+'    rgFound.Offset(AccountsQunty + 1, 2).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C6:R" & CStr(rgFound.Row + AccountsQunty) & "C6)"
+'    rgFound.Offset(AccountsQunty + 1, 4).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C8:R" & CStr(rgFound.Row + AccountsQunty) & "C8)"
+'    rgFound.Offset(AccountsQunty + 1, 5).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C9:R" & CStr(rgFound.Row + AccountsQunty) & "C9)"
+'    rgFound.Offset(AccountsQunty + 1, 9).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C13:R" & CStr(rgFound.Row + AccountsQunty) & "C13)"
+'    rgFound.Offset(AccountsQunty + 1, 11).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C14:R" & CStr(rgFound.Row + AccountsQunty) & "C14)"
+'    rgFound.Offset(AccountsQunty + 1, 13).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C16:R" & CStr(rgFound.Row + AccountsQunty) & "C16)"
+'    rgFound.Offset(AccountsQunty + 1, 14).FormulaR1C1 = "=SUM(R" & CStr(rgFound.Row) & "C17:R" & CStr(rgFound.Row + AccountsQunty) & "C17)"
+'    rgFound.Offset(AccountsQunty + 4, -2).Value = "Notas:"
+'    Columns("D:D").EntireColumn.AutoFit
+'End Sub
 Function get_number_activities(sheet_name As String) As Integer
     Sheets(sheet_name).Activate
     Dim rgFoundtop As Range
@@ -682,5 +682,3 @@ Function get_number_activities(sheet_name As String) As Integer
     
     get_number_activities = rgFoundbot.Row - rgFoundtop.Row - 3
 End Function
-
-
