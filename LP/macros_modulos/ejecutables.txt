@@ -63,7 +63,7 @@ If Not Sheets("backend").Range("O2").Value Then
     Exit Sub
 End If
 
-Application.ScreenUpdating = False
+'Application.ScreenUpdating = False
 Call unprotect_All
 Call check_sheets_visibility
 

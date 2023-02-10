@@ -6,7 +6,7 @@ Dim cantidad_cuentas_pasada As Integer
 cantidad_cuentas_pasada = Sheets("backend").Cells(2, 29).Value
 
 If cantidad_cuentas_actual <> cantidad_cuentas_pasada Then
-    Application.ScreenUpdating = False
+    'Application.ScreenUpdating = False
     Call unprotect_All
     Call deal_Acc
     Sheets("backend").Cells(2, 29).Value = cantidad_cuentas_actual

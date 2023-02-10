@@ -1,5 +1,5 @@
 Private Sub Worksheet_Change(ByVal Target As Range)
-Application.ScreenUpdating = False
+'Application.ScreenUpdating = False
 Dim cantidad_cuentas_actual As Integer
 cantidad_cuentas_actual = Sheets("cuentas").ListObjects("TablaCuentas").DataBodyRange.Rows.Count - 1
 Dim cantidad_cuentas_pasada As Integer

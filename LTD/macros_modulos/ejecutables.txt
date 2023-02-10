@@ -51,7 +51,7 @@ If Not Sheets("backend").Range("BS2").Value Then
     Exit Sub
 End If
 
-Application.ScreenUpdating = False
+'Application.ScreenUpdating = False
 Call unprotect_All
 Call check_sheets_visibility
 Call format_cuentas_table
