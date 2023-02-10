@@ -225,54 +225,66 @@ Next
 visible_activityes = IIf(visible_activityes, visible_activityes, False)
 End Function
 
-Sub go_through_accounts_sheets_list()
-Dim act_num As Variant
-
-act_num = Sheets("backend").Range("p2:q14").Value2
-
-
-Dim i As Integer
-For i = LBound(act_num) To UBound(act_num)
-        With Sheets(act_num(i, 1))
-        Dim activityEnd As Range
-        Set activityEnd = .Range("B:B").Find("Total*").Offset(-2, 0)
-        If Not visible_activityes(.Range("B8"), activityEnd) Then
-            .visible = False
-        Else
-            .visible = True
-            .Cells.EntireRow.hidden = False
-            Dim starting_format As Range
-            Dim endingFormat As Range
-            Set starting_format = .Range("B:B").Find("Total*").Offset(5, 0)
-            Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
-            Dim starting_col As Integer
-            starting_col = IIf(act_num(i, 2) < 11, 5, 4)
-            
-            Dim starting_formatRow As Long
-            Dim endingFormatRow As Long
-            starting_formatRow = starting_format.Row
-            endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
-            'set up print area
-            .PageSetup.printArea = .Range(.Cells(2, 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).Address
-            'give format to the account sums
-            'dealing with annoying edge case
-            Call hide_sample_accounts(starting_format, endingFormat, starting_col)
-            .Range(.Cells(starting_formatRow, starting_col + 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
-            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1)).Font.Bold = True
-            .Columns(starting_col).EntireColumn.AutoFit
-            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).HorizontalAlignment = xlCenter
-            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).VerticalAlignment = xlCenter
-            Dim row_to_underline As Integer
-            For row_to_underline = starting_formatRow To endingFormatRow - 2
-                Call formatBlueLines(.Range(.Cells(row_to_underline, starting_col), .Cells(row_to_underline, act_num(i, 2) + 1)))
-            Next
-            Dim row_to_black As Range
-            Set row_to_black = .Range(.Cells(endingFormatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1))
-            row_to_black.Font.ThemeColor = xlThemeColorDark1
-            row_to_black.Interior.ThemeColor = xlThemeColorLight1
-        End If
-    End With
-Next
+    Sub go_through_accounts_sheets_list()
+        Dim act_num As Variant
+        
+        act_num = Sheets("backend").Range("p2:q14").Value2
+        
+        
+        Dim i As Integer
+        For i = LBound(act_num) To UBound(act_num)
+                With Sheets(act_num(i, 1))
+                Dim activityEnd As Range
+                Set activityEnd = .Range("B:B").Find("Total*").Offset(-2, 0)
+                If Not visible_activityes(.Range("B8"), activityEnd) Then
+                    .visible = False
+                Else
+                    .visible = True
+                    Debug.Print "visible " & act_num(i, 1)
+                    .Cells.EntireRow.hidden = False
+                    Dim starting_format As Range
+                    Dim endingFormat As Range
+                    Set starting_format = .Range("B:B").Find("Total*").Offset(5, 0)
+                    Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+                    Dim starting_col As Integer
+                    starting_col = IIf(act_num(i, 2) < 11, 5, 4)
+                    
+                    Dim starting_formatRow As Long
+                    Dim endingFormatRow As Long
+                    starting_formatRow = starting_format.Row
+                    endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
+                    Debug.Print "found intial last row for sheet " & act_num(i, 1); " as being " & CStr(endingFormatRow)
+                    'set up print area
+                    .PageSetup.printArea = .Range(.Cells(2, 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).Address
+                    Debug.Print "configured print area as " & CStr(.Range(.Cells(2, 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).Address)
+                    'give format to the account sums
+                    'dealing with annoying edge case
+                    Call hide_sample_accounts(starting_format, endingFormat, starting_col)
+                    Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+                    endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
+                    Debug.Print "after hiding found last last row as " & CStr(endingFormatRow)
+                    .Range(.Cells(starting_formatRow, starting_col + 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
+                    .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1)).Font.Bold = True
+                    .Columns(starting_col).EntireColumn.AutoFit
+                    .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).HorizontalAlignment = xlCenter
+                    .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).VerticalAlignment = xlCenter
+                    Dim row_to_underline As Integer
+                    For row_to_underline = starting_formatRow To endingFormatRow - 2
+                        Call formatBlueLines(.Range(.Cells(row_to_underline, starting_col), .Cells(row_to_underline, act_num(i, 2) + 1)))
+                    Next
+                    Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+                    endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
+                    Debug.Print "after formating blue lines found last last row as " & CStr(endingFormatRow)
+                    Dim row_to_black As Range
+                    Set row_to_black = .Range(.Cells(endingFormatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1))
+                    row_to_black.Font.ThemeColor = xlThemeColorDark1
+                    row_to_black.Interior.ThemeColor = xlThemeColorLight1
+                    Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+                    endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
+                    Debug.Print "at the very end found last last row as " & CStr(endingFormatRow)
+                End If
+            End With
+        Next
 End Sub
 Sub hide_sample_accounts(act_start As Range, act_end As Range, starting_col As Integer)
     
