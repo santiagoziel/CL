@@ -42,7 +42,7 @@ With Sheets("Cuentas")
     .Range("r4").Value = "ARCHIVO VALORES"
     .Range("s4").Value = "239"
     
-    .Range("r5").Value = True
+    .Range("r5").Value = False
     .Range("s5").Value = True
 End With
 

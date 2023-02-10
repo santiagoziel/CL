@@ -240,16 +240,23 @@ For i = LBound(act_num) To UBound(act_num)
             .visible = False
         Else
             .visible = True
+            .Cells.EntireRow.hidden = False
+            Dim starting_format As Range
+            Dim endingFormat As Range
+            Set starting_format = .Range("B:B").Find("Total*").Offset(5, 0)
+            Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+            Dim starting_col As Integer
+            starting_col = IIf(act_num(i, 2) < 11, 5, 4)
+            
             Dim starting_formatRow As Long
             Dim endingFormatRow As Long
-            starting_formatRow = .Range("B:B").Find("Total*").Row + 5
-            endingFormatRow = .Range("b:b").Find("Notas").Row - 3
+            starting_formatRow = starting_format.Row
+            endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
             'set up print area
             .PageSetup.printArea = .Range(.Cells(2, 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).Address
             'give format to the account sums
             'dealing with annoying edge case
-            Dim starting_col As Integer
-            starting_col = IIf(act_num(i, 2) < 11, 5, 4)
+            Call hide_sample_accounts(starting_format, endingFormat, starting_col)
             .Range(.Cells(starting_formatRow, starting_col + 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
             .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1)).Font.Bold = True
             .Columns(starting_col).EntireColumn.AutoFit
@@ -267,7 +274,18 @@ For i = LBound(act_num) To UBound(act_num)
     End With
 Next
 End Sub
-
+Sub hide_sample_accounts(act_start As Range, act_end As Range, starting_col As Integer)
+    
+    Dim acts As Range
+    Set acts = Range(act_start, act_end).Offset(0, starting_col - 1)
+    
+    acts.EntireRow.hidden = False
+    
+    Dim cell As Range
+    For Each cell In acts
+        cell.EntireRow.hidden = Not Len(cell.Text) > 1
+    Next
+End Sub
 Sub formatBlueLines(rowToFormat As Range)
     With rowToFormat.Borders(xlEdgeBottom)
         .LineStyle = xlContinuous
@@ -664,3 +682,5 @@ Function get_number_activities(sheet_name As String) As Integer
     
     get_number_activities = rgFoundbot.Row - rgFoundtop.Row - 3
 End Function
+
+
