@@ -114,54 +114,104 @@ Function get_number_activities(sheet_name As String) As Integer
     get_number_activities = rgFoundbot.Row - rgFoundtop.Row - 3
 End Function
 
-Sub go_through_accounts_sheets_list()
-Dim num_sheets As Integer
-num_sheets = Sheets("backend").Cells(Sheets("backend").Rows.Count, 2).End(xlUp).Row
+    Function visible_activityes(act_start As Range, act_end As Range) As Boolean
 
-Dim sheets_info As Variant
-'mensajes individuales de cada sheet de act
-sheets_info = Sheets("backend").Range("a2:b" & CStr(num_sheets)).Value2
-Dim varKey As Integer
-For varKey = 1 To num_sheets - 1
-    'check if there are no entryees
-    With Sheets(sheets_info(varKey, 2))
-        If .Range("B6").End(xlDown).Text Like "Total*" Then
-            .Visible = False
-        Else
-            Dim starting_formatRow As Long
-            Dim endingFormatRow As Long
-            starting_formatRow = .Range("B:B").Find("Total*").Row + 5
-            endingFormatRow = .Range("b:b").Find("Notas:").Row - 3
-            .Visible = True
-            'set up print area
-            .PageSetup.printArea = .Range(.Cells(2, 2), .Cells(endingFormatRow, sheets_info(varKey, 1) + 1)).Address
-            'give format to the account sums
-            'dealing with annoying edge case
-            Dim starting_col As Integer
-            starting_col = IIf(sheets_info(varKey, 1) = 8, 5, 4)
-            .Range(.Cells(starting_formatRow, starting_col + 2), .Cells(endingFormatRow, sheets_info(varKey, 1) + 1)).NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
-            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, sheets_info(varKey, 1) + 1)).Font.Bold = True
-            .Columns(starting_col).EntireColumn.AutoFit
-            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).HorizontalAlignment = xlCenter
-            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).VerticalAlignment = xlCenter
-            Dim row_to_underline As Integer
-            For row_to_underline = starting_formatRow To endingFormatRow - 2
-                Call formatBlueLines(.Range(.Cells(row_to_underline, starting_col), .Cells(row_to_underline, sheets_info(varKey, 1) + 1)))
+        Dim checkValueColumn As Integer
+        checkValueColumn = act_start.Worksheet.Range("b1:q7").Find("? ?oneda ?riginal").Column
+        Dim acts As Range
+        Set acts = Range(act_start, act_end).Offset(0, checkValueColumn - 2)
+        
+        acts.EntireRow.hidden = False
+        
+        Dim cell As Range
+        For Each cell In acts
+            If Len(cell.Text) > 1 Then
+                visible_activityes = True
+            Else
+                cell.EntireRow.hidden = True
+            End If
+        Next
+        visible_activityes = IIf(visible_activityes, visible_activityes, False)
+        End Function
+        
+            Sub go_through_accounts_sheets_list()
+                Dim act_num As Variant
+                
+                act_num = Sheets("backend").Range("a2:b13").Value2
+                
+                
+                Dim i As Integer
+                For i = LBound(act_num) To UBound(act_num)
+                        With Sheets(act_num(i, 1))
+                        Dim activityEnd As Range
+                        Set activityEnd = .Range("B:B").Find("Total*").Offset(-2, 0)
+                        If Not visible_activityes(.Range("B8"), activityEnd) Then
+                            .visible = False
+                        Else
+                            .visible = True
+                            Debug.Print "visible " & act_num(i, 1)
+                            Dim starting_format As Range
+                            Dim endingFormat As Range
+                            Set starting_format = .Range("B:B").Find("Total*").Offset(5, 0)
+                            Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+                            Dim starting_col As Integer
+                            starting_col = IIf(act_num(i, 2) < 11, 5, 4)
+                            
+                            Dim starting_formatRow As Long
+                            Dim endingFormatRow As Long
+                            starting_formatRow = starting_format.Row
+                            endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
+                            Debug.Print "found intial last row for sheet " & act_num(i, 1); " as being " & CStr(endingFormatRow)
+                            'set up print area
+                            .PageSetup.printArea = .Range(.Cells(2, 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).Address
+                            Debug.Print "configured print area as " & CStr(.Range(.Cells(2, 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).Address)
+                            'give format to the account sums
+                            'dealing with annoying edge case
+                            Call hide_sample_accounts(starting_format, endingFormat, starting_col)
+                            Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+                            endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
+                            Debug.Print "after hiding found last last row as " & CStr(endingFormatRow)
+                            .Range(.Cells(starting_formatRow, starting_col + 2), .Cells(endingFormatRow, act_num(i, 2) + 1)).NumberFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* ""-""??_);_(@_)"
+                            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1)).Font.Bold = True
+                            .Columns(starting_col).EntireColumn.AutoFit
+                            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).HorizontalAlignment = xlCenter
+                            .Range(.Cells(starting_formatRow, starting_col), .Cells(endingFormatRow, starting_col + 1)).VerticalAlignment = xlCenter
+                            Dim row_to_underline As Integer
+                            For row_to_underline = starting_formatRow To endingFormatRow - 2
+                                Call formatBlueLines(.Range(.Cells(row_to_underline, starting_col), .Cells(row_to_underline, act_num(i, 2) + 1)))
+                            Next
+                            Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+                            endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
+                            Debug.Print "after formating blue lines found last last row as " & CStr(endingFormatRow)
+                            Dim row_to_black As Range
+                            Set row_to_black = .Range(.Cells(endingFormatRow, starting_col), .Cells(endingFormatRow, act_num(i, 2) + 1))
+                            row_to_black.Font.ThemeColor = xlThemeColorDark1
+                            row_to_black.Interior.ThemeColor = xlThemeColorLight1
+                            Set endingFormat = .Range("b:b").Find("Notas").Offset(-5, 0)
+                            endingFormatRow = .Cells.Find(what:="* ?otal *", after:=endingFormat).Row
+                            Debug.Print "at the very end found last last row as " & CStr(endingFormatRow)
+                        End If
+                    End With
+                Next
+        End Sub
+        Sub hide_sample_accounts(act_start As Range, act_end As Range, starting_col As Integer)
+            
+            Dim acts As Range
+            Set acts = Range(act_start, act_end).Offset(0, starting_col - 1)
+            
+            acts.EntireRow.hidden = False
+            
+            Dim cell As Range
+            For Each cell In acts
+                cell.EntireRow.hidden = Not Len(cell.Text) > 1
             Next
-            Dim row_to_black As Range
-            Set row_to_black = .Range(.Cells(endingFormatRow, starting_col), .Cells(endingFormatRow, sheets_info(varKey, 1) + 1))
-            row_to_black.Font.ThemeColor = xlThemeColorDark1
-            row_to_black.Interior.ThemeColor = xlThemeColorLight1
-        End If
-    End With
-Next
-End Sub
+        End Sub
 Sub formatBlueLines(rowToFormat As Range)
     With rowToFormat.Borders(xlEdgeBottom)
         .LineStyle = xlContinuous
-        .ThemeColor = 5
+        .Color = 16760971
         .TintAndShade = 0
-        .Weight = xlThin
+        .Weight = 2
     End With
 End Sub
 Sub changetonumberFOrmat()
@@ -266,6 +316,8 @@ End Sub
 Sub go_through_pivot_list()
         'si no esconder la hoja
         'si si configurar printArea
+
+ThisWorkbook.RefreshAll
 Dim pivotSheets As Variant
 pivotSheets = Array("Cap Gains Summary", _
                     "Cap Gains Details", _
@@ -290,41 +342,30 @@ Function pivot_list_is_empty(sheetName As Variant) As Boolean
 pivot_list_is_empty = True
 Dim ws As Worksheet
 Set ws = Sheets(sheetName)
+ws.visible = True
+ws.Activate
 Dim pt As PivotTable
 Set pt = ws.PivotTables(1)
-pt.NullString = "0"
-pt.PivotCache.Refresh
-If ws.Cells(ws.Rows.Count, 3).End(xlUp).Row < 6 Then
-    Exit Function
-End If
-Dim pf As PivotField
-Dim df As PivotField
-Dim check As Boolean
+pt.DisplayFieldCaptions = False
+Dim start_col As Integer
+start_col = Cells(5, 1).End(xlToRight).Column
+
+Dim lCol As Integer
+'Find the last non-blank cell in row 1
+lCol = Cells(5, Columns.Count).End(xlToLeft).Column
 pivot_list_is_empty = True
-  For Each pf In pt.PivotFields
-  check = False
-    If pf.Caption <> "Values" Then
-        Select Case pf.Orientation
-          Case xlHidden
-            For Each df In pt.DataFields
-                If df.SourceName _
-                    = pf.SourceName Then
-                  check = True
-                  Exit For
-                End If
-            Next df
-          Case xlDataField
-            check = True
-        End Select
-        If check Then
-            'MsgBox CStr(pf.SourceName) & " ---- " & CStr(pf.PivotItems.Count)
-            If pf.PivotItems.Count > 2 Then
-                pivot_list_is_empty = False
-                Exit For
-            End If
-        End If
+Dim cell As Range
+On Error GoTo outRutine
+For Each cell In pt.DataBodyRange
+    If cell.Value <> "" And cell.Value <> 0 Then
+        pivot_list_is_empty = False
+        Exit For
     End If
-    Next
+Next
+
+outRutine:
+pt.DisplayFieldCaptions = True
+Rows("5:5").EntireRow.AutoFit
 End Function
 Sub OrderList_PivotFields()
 'contextures.com

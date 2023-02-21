@@ -241,7 +241,6 @@ End Function
                 Else
                     .visible = True
                     Debug.Print "visible " & act_num(i, 1)
-                    .Cells.EntireRow.hidden = False
                     Dim starting_format As Range
                     Dim endingFormat As Range
                     Set starting_format = .Range("B:B").Find("Total*").Offset(5, 0)
