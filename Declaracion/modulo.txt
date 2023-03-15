@@ -1,0 +1,78 @@
+Sub generateValuesFile()
+
+Dim main_wb As Workbook
+Set main_wb = ActiveWorkbook
+
+Dim WS_Count As Integer
+WS_Count = main_wb.Worksheets.Count
+
+Dim values_wb As Workbook
+Set values_wb = Workbooks.Add
+
+Dim currentSheetName As String
+
+'just making sure
+values_wb.Activate
+
+Dim i As Integer
+
+For i = WS_Count To 1 Step -1
+   If main_wb.Worksheets(i).Visible Then
+    currentSheetName = main_wb.Worksheets(i).Name
+    Call copy_values_from_sheet(main_wb, values_wb, currentSheetName)
+   End If
+Next
+
+' Delete the last sheet, which is empty
+Application.DisplayAlerts = False
+values_wb.Worksheets(values_wb.Worksheets.Count).Delete
+Application.DisplayAlerts = True
+End Sub
+
+Sub copy_values_from_sheet(origin As Workbook, copy As Workbook, sheetName As String)
+    Dim originSheet As Worksheet
+    Dim copySheet As Worksheet
+    Dim printAreas() As String
+    Dim printArea As String
+    Dim rangeStrings() As String
+    Dim rangeString As String
+    Dim i As Integer
+    Dim j As Integer
+    Dim isProtected As Boolean
+    isProtected = False
+    
+    ' Get the sheet with the given name from the origin workbook
+    Set originSheet = origin.Worksheets(sheetName)
+    
+    ' Get the print area for the sheet
+    printArea = originSheet.PageSetup.printArea
+    If printArea = "" Then
+        Exit Sub
+    End If
+    
+    ' Split the print area string by commas to get each section
+    printAreas = Split(printArea, ",")
+    
+    ' Create a new sheet with the same name in the copy workbook
+    Set copySheet = copy.Worksheets.Add()
+    copySheet.Name = originSheet.Name
+    
+    ' Loop through each print area section and copy and paste the corresponding range
+    For i = LBound(printAreas) To UBound(printAreas)
+        rangeString = Trim(printAreas(i))
+        ' If the range string is a single cell, add the missing part of the range string
+        If InStr(rangeString, ":") = 0 Then
+            rangeString = rangeString & ":" & rangeString
+        End If
+        ' Split the range string by the colon to get the start and end ranges
+        rangeStrings = Split(rangeString, ":")
+        ' Copy and paste the range from the origin sheet to the copy sheet
+        originSheet.Range(rangeStrings(0), rangeStrings(1)).copy
+        copySheet.Range(rangeStrings(0), rangeStrings(1)).PasteSpecial xlPasteValues
+        copySheet.Range(rangeStrings(0), rangeStrings(1)).PasteSpecial xlPasteFormats
+        copySheet.Range(rangeStrings(0), rangeStrings(1)).PasteSpecial Paste:=xlPasteColumnWidths
+    Next i
+    
+    copySheet.Cells.EntireRow.AutoFit
+    
+End Sub
