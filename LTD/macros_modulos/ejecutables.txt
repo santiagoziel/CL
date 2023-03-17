@@ -10,11 +10,27 @@ If Sheets("backend").Range("BS2").Value Then
 End If
 
 'gen table
+Sheets("Cuentas").Unprotect "JUANG2022"
 With Sheets("Cuentas")
+
+    Dim fRow As Long
     Dim lRow As Long
-    lRow = .Cells(Rows.Count, 4).End(xlUp).Row
-    lRow = IIf(lRow > 5, lRow, 6)
-    .ListObjects.Add(xlSrcRange, .Range("$B$4:$D$" & CStr(lRow)), , xlYes).Name = _
+    Dim foundCell As Range
+    
+    Set foundCell = .Range("C:C").Find("Banco", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    If foundCell Is Nothing Then
+        MsgBox "no puedo encontrar la lista de cuentas"
+        Exit Sub
+    End If
+    fRow = foundCell.Row
+    
+    If .Range("c" & CStr(fRow + 1)).Value = "" And .Range("c" & CStr(fRow + 2)).Value = "" Then
+        lRow = fRow + 1
+    Else
+        lRow = .Cells(fRow + 2, 3).End(xlDown).Row
+    End If
+    .ListObjects.Add(xlSrcRange, .Range("$B$5:$D$" & CStr(lRow)), , xlYes).Name = _
         "TablaCuentas"
     .ListObjects("TablaCuentas").TableStyle = ""
     
@@ -32,13 +48,14 @@ With Sheets("Cuentas")
         .ShowError = True
     End With
     .Range("r4").Value = "ARCHIVO VALORES"
-    .Range("r5").Value = True
+    .Range("r5").Value = False
 End With
 
 Sheets("backend").Unprotect "JUANG2022"
 Sheets("backend").Range("BS1").Value = "RAN SETUP"
 Sheets("backend").Range("BS2").Value = True
 Sheets("backend").Protect Password:="JUANG2022", DrawingObjects:=True, Contents:=True, Scenarios:=True
+Sheets("Cuentas").Protect "JUANG2022"
 MsgBox "SET UP Done"
 End Sub
 Sub format_file()
